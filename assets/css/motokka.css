@@ -42,11 +42,12 @@
   --mtk-erro-fundo-claro:    #FFFFFF;
   --mtk-erro-texto-claro:    #B3261E;
 
-  /* tipografia: Archivo variável (largura 100–125%) e JetBrains Mono para
-     specs, parcelas e rótulos. */
+  /* tipografia: Archivo variável (largura 100–125%) e Outfit em caixa alta
+     para specs, dados e rótulos. O styleguide previa JetBrains Mono nesse
+     papel; a mono saiu a pedido, por dar à página cara de template. */
   --mtk-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
   --mtk-texto:   "Archivo", "Segoe UI", system-ui, sans-serif;
-  --mtk-mono:    "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --mtk-rotulo:  "Outfit", "Archivo", system-ui, sans-serif;
 
   /* espaço · base 4 */
   --mtk-4: 4px;   --mtk-8: 8px;   --mtk-12: 12px; --mtk-16: 16px;
@@ -209,10 +210,10 @@ a:hover { color: var(--mtk-vermelho); }
 
 .t-body { margin: 0; color: var(--mtk-grafite); max-width: 68ch; text-wrap: pretty; }
 
-/* Rótulo em mono, como no painel do veículo. Sobre papel é grafite: vermelho
+/* Rótulo em Outfit caixa alta. Sobre papel é grafite: vermelho
    nesse corpo não passa no contraste. */
 .t-label {
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 13px;
   line-height: 1.2;
@@ -224,7 +225,7 @@ a:hover { color: var(--mtk-vermelho); }
 
 .t-caption { font-size: 13px; line-height: 1.5; color: var(--mtk-apoio); margin: 0; }
 
-.t-num { font-family: var(--mtk-mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.t-num { font-family: var(--mtk-rotulo); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: .04em; text-transform: uppercase; }
 
 /* Em fundo escuro os neutros invertem. O corpo nunca cai abaixo de 4.5:1. */
 .s-escura { background: var(--mtk-preto); color: var(--mtk-papel); }
@@ -380,7 +381,7 @@ a:hover { color: var(--mtk-vermelho); }
   gap: 6px;
   padding: 6px 10px;
   border-radius: var(--mtk-r-tag);
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 11px;
   line-height: 1;
@@ -441,7 +442,7 @@ a:hover { color: var(--mtk-vermelho); }
 .header__link {
   position: relative;
   padding: 6px 0;
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 13px;
   letter-spacing: .08em;
@@ -477,7 +478,7 @@ a:hover { color: var(--mtk-vermelho); }
   color: var(--mtk-papel);
   border: 1.5px solid var(--mtk-concreto);
   border-radius: var(--mtk-r-btn);
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 12px;
   letter-spacing: .08em;
@@ -623,7 +624,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 }
 .menu__item:hover { color: var(--mtk-vermelho-texto); }
 .menu__numero {
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-stretch: 100%;
   font-size: 12px;
   font-weight: 600;
@@ -631,11 +632,12 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   color: var(--mtk-vermelho-texto);
   vertical-align: super;
   margin-right: var(--mtk-8);
+  text-transform: uppercase;
 }
 
 .menu__rodape { margin-top: auto; display: grid; gap: var(--mtk-16); }
 .menu__contato { display: grid; gap: 4px; font-size: 15px; color: var(--mtk-cinza-claro); }
-.menu__contato strong { color: var(--mtk-papel); font-family: var(--mtk-mono); font-weight: 600; }
+.menu__contato strong { color: var(--mtk-papel); font-family: var(--mtk-rotulo); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
 
 /* ── vitrine ───────────────────────────────────────────────────────────── */
 
@@ -731,12 +733,14 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   color: var(--mtk-branco);
 }
 .filtro__contagem {
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-size: 11px;
   padding: 2px 7px;
   border-radius: var(--mtk-r-btn);
   background: rgba(255, 255, 255, .14);
   font-variant-numeric: tabular-nums;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 .filtro__btn[aria-pressed="true"] .filtro__contagem { background: rgba(14, 15, 12, .28); color: var(--mtk-branco); }
 
@@ -778,6 +782,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   position: relative;
   display: grid;
   grid-template-rows: auto 1fr;
+  grid-template-columns: minmax(0, 1fr);
   background: var(--mtk-branco);
   border: 1px solid var(--mtk-linha);
   border-radius: var(--mtk-r-card);
@@ -862,15 +867,19 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 .card:hover .card__foto--recorte img { transform: scale(1.05); }
 
 .card__tags { position: absolute; left: 14px; top: 14px; pointer-events: none; }
+/* minmax(0, 1fr), aqui e nos botões: com a trilha em `auto`, os dois botões
+   em caixa alta alargavam o corpo além do card, e o respiro da direita ficava
+   menor que o da esquerda. */
 .card__corpo {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--mtk-16);
   align-content: space-between;
   padding: var(--mtk-24);
 }
 .card__categoria {
   margin: 0 0 6px;
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-size: 12px;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -878,7 +887,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 }
 .card__nome { font-family: var(--mtk-display); font-weight: 800; font-stretch: 115%; font-size: 26px; line-height: 1.05; letter-spacing: -.01em; text-transform: uppercase; margin: 0; }
 
-/* Specs em mono, como no painel. Duas colunas quando o fabricante só
+/* Specs em Outfit caixa alta. Duas colunas quando o fabricante só
    confirmou dois dos três números. O 1 px de fundo vira a linha da grade. */
 .card__numeros {
   display: grid;
@@ -893,13 +902,15 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 .card__numeros[data-colunas="1"] { grid-template-columns: 1fr; }
 .card__numero { display: grid; gap: 2px; padding: 10px; background: var(--mtk-branco); }
 .card__numero b {
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 15px;
   line-height: 1.2;
   color: var(--mtk-vermelho);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 .card__numero b span { margin-left: 3px; }
 .card__numero small { font-size: 11px; line-height: 1.3; color: var(--mtk-apoio); }
@@ -913,10 +924,10 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   line-height: 1.5;
   color: var(--mtk-apoio);
 }
-.card__pendente strong { display: block; color: var(--mtk-preto); font-family: var(--mtk-mono); font-weight: 600; font-size: 12px; }
+.card__pendente strong { display: block; color: var(--mtk-preto); font-family: var(--mtk-rotulo); font-weight: 600; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
 
-.card__acoes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--mtk-8); }
-.card__acoes .btn { min-height: 44px; padding-inline: var(--mtk-12); font-size: 14px; }
+.card__acoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--mtk-8); }
+.card__acoes .btn { min-height: 44px; padding-inline: var(--mtk-8); gap: 6px; font-size: 13px; letter-spacing: 0; }
 @media (max-width: 380px) {
   .card__acoes { grid-template-columns: 1fr; }
 }
@@ -1098,7 +1109,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 }
 .modal__eyebrow {
   margin: 0;
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 11px;
   letter-spacing: .08em;
@@ -1129,11 +1140,11 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   border-bottom: 1px solid var(--mtk-concreto);
 }
 .modal__ficha dt { color: var(--mtk-cinza-claro); }
-.modal__ficha dd { margin: 0; text-align: right; font-family: var(--mtk-mono); font-weight: 600; font-size: 13px; }
+.modal__ficha dd { margin: 0; text-align: right; font-family: var(--mtk-rotulo); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
 .modal__equipamentos { display: grid; gap: var(--mtk-8); }
 .modal__equipamentos-rotulo {
   margin: 0;
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 11px;
   letter-spacing: .08em;
@@ -1161,7 +1172,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
    não é acessível, mas repetir quatro nomes polui a base do modal. */
 .modal__cores-rotulo {
   margin: 0;
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 11px;
   letter-spacing: .08em;
@@ -1238,11 +1249,12 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 .modal__posicao {
   min-width: 5ch;
   text-align: center;
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: .04em;
   color: rgba(255, 255, 255, .7);
+  text-transform: uppercase;
 }
 
 @media (max-width: 760px) {
@@ -1384,7 +1396,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 }
 .depoimento__meta { display: grid; gap: 1px; }
 .depoimento__nome { font-family: var(--mtk-display); font-weight: 700; font-size: 15px; }
-.depoimento__modelo { font-family: var(--mtk-mono); font-size: 12px; color: var(--mtk-apoio); }
+.depoimento__modelo { font-family: var(--mtk-rotulo); font-size: 12px; color: var(--mtk-apoio); letter-spacing: .04em; text-transform: uppercase; }
 
 /* ── FAQ ───────────────────────────────────────────────────────────────── */
 
@@ -1411,7 +1423,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 }
 .faq__botao:hover { color: var(--mtk-grafite); }
 /* Sem seta girando: o sinal + / − basta e não desestabiliza a linha de base. */
-.faq__sinal { font-family: var(--mtk-mono); font-size: 22px; font-weight: 400; color: var(--mtk-vermelho); text-align: center; }
+.faq__sinal { font-family: var(--mtk-rotulo); font-size: 22px; font-weight: 400; color: var(--mtk-vermelho); text-align: center; letter-spacing: .04em; text-transform: uppercase; }
 
 .faq__resposta {
   display: grid;
@@ -1440,7 +1452,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 
 .rodape__logo img { height: 96px; width: auto; margin-bottom: var(--mtk-16); }
 .rodape__titulo {
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 11px;
   letter-spacing: .08em;
@@ -1462,9 +1474,11 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   /* Folga extra embaixo: o CTA flutuante é fixed e cobriria a nota legal. */
   padding-block: var(--mtk-24) calc(var(--mtk-24) + 72px);
   border-top: 1px solid var(--mtk-concreto);
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-size: 12px;
   color: var(--mtk-nevoa);
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 /* ── Lightbox ──────────────────────────────────────────────────────────
@@ -1532,11 +1546,12 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   left: 50%; bottom: var(--mtk-16);
   transform: translateX(-50%);
   margin: 0;
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 12px;
   letter-spacing: .08em;
   color: var(--mtk-nevoa);
+  text-transform: uppercase;
 }
 
 /* No celular a foto ocupa a tela e as setas viram sobreposição, senão sobra
@@ -1764,7 +1779,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 
 .capa__selo {
   margin: 0;
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 12px;
   letter-spacing: .08em;
@@ -1795,7 +1810,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   text-wrap: pretty;
 }
 
-/* Três fatos da loja no registro do painel: rótulo em névoa, dado em mono. */
+/* Três fatos da loja no registro do painel: rótulo em névoa, dado em Outfit caixa alta. */
 .capa__dados {
   display: grid;
   grid-template-columns: repeat(3, auto);
@@ -1807,7 +1822,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 }
 .capa__dados div { display: grid; gap: 4px; }
 .capa__dados dt { font-size: 12px; color: var(--mtk-linha-forte); }
-.capa__dados dd { margin: 0; font-family: var(--mtk-mono); font-weight: 600; font-size: 13px; }
+.capa__dados dd { margin: 0; font-family: var(--mtk-rotulo); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
 
 @media (max-width: 860px) {
   .capa { padding-block: var(--mtk-48) var(--mtk-32); }
@@ -1931,10 +1946,12 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   position: absolute;
   left: 50%; bottom: calc(100% + 6px);
   transform: translateX(-50%);
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: 13px;
   white-space: nowrap;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 .regua__lados { display: grid; grid-template-columns: 1fr 1fr; gap: var(--mtk-32); }
 .regua__lado { display: grid; gap: var(--mtk-12); align-content: start; justify-items: start; }
@@ -1972,11 +1989,13 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 .conta__campo { display: grid; gap: var(--mtk-12); margin-top: var(--mtk-16); }
 .conta__rotulo { font-size: 14px; color: var(--mtk-cinza-claro); }
 .conta__km {
-  font-family: var(--mtk-mono);
+  font-family: var(--mtk-rotulo);
   font-weight: 600;
   font-size: clamp(34px, 4vw, 48px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 input[type="range"] {
@@ -2018,8 +2037,8 @@ input[type="range"]::-moz-range-thumb {
   align-items: baseline;
   gap: var(--mtk-8) var(--mtk-16);
 }
-.conta__nome { font-family: var(--mtk-mono); font-weight: 600; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--mtk-cinza-claro); }
-.conta__linha b { font-family: var(--mtk-mono); font-weight: 600; font-size: clamp(22px, 2.4vw, 30px); font-variant-numeric: tabular-nums; }
+.conta__nome { font-family: var(--mtk-rotulo); font-weight: 600; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--mtk-cinza-claro); }
+.conta__linha b { font-family: var(--mtk-rotulo); font-weight: 600; font-size: clamp(22px, 2.4vw, 30px); font-variant-numeric: tabular-nums; letter-spacing: .04em; text-transform: uppercase; }
 /* A barra da tomada tem a largura proporcional ao custo: é o gráfico. O JS só
    escreve --proporcao. O mínimo de 6px garante que ela nunca some. */
 .conta__barra { grid-column: 1 / -1; height: 18px; border-radius: 3px; transition: width var(--mtk-medio); }
@@ -2054,10 +2073,10 @@ input[type="range"]::-moz-range-thumb {
   transition: transform var(--mtk-rapido), box-shadow var(--mtk-rapido), border-color var(--mtk-rapido);
 }
 .uso:hover { transform: translateY(-2px); border-color: var(--mtk-preto); box-shadow: var(--mtk-sombra-1); color: var(--mtk-preto); }
-.uso__indice { font-family: var(--mtk-mono); font-weight: 600; font-size: 13px; color: var(--mtk-apoio); }
+.uso__indice { font-family: var(--mtk-rotulo); font-weight: 600; font-size: 13px; color: var(--mtk-apoio); letter-spacing: .04em; text-transform: uppercase; }
 .uso__titulo { font-family: var(--mtk-display); font-weight: 800; font-stretch: 110%; font-size: 24px; line-height: 1.05; text-transform: uppercase; }
 .uso__texto { font-size: 15px; line-height: 1.5; color: var(--mtk-grafite); }
-.uso__seta { font-family: var(--mtk-mono); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+.uso__seta { font-family: var(--mtk-rotulo); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
 .uso--destaque { background: var(--mtk-preto); border-color: var(--mtk-preto); color: var(--mtk-papel); }
 .uso--destaque:hover { color: var(--mtk-papel); border-color: var(--mtk-vermelho); }
 .uso--destaque .uso__indice { color: var(--mtk-vermelho-texto); }
