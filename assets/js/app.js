@@ -1,0 +1,1300 @@
+/* ==========================================================================
+   MOTOKKA PRIME · comportamento da página
+   Sem dependências. GSAP é opcional e vive em motion.js; nada aqui depende
+   dele, então a página continua inteira e utilizável se o CDN falhar.
+   ========================================================================== */
+
+(() => {
+  'use strict';
+
+  const cfg = window.MOTOKKA_CONFIG;
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+  /** Lê 'endereco.completo' dentro do config, inclusive getters. */
+  const pegar = (caminho) => caminho.split('.').reduce((o, k) => (o == null ? o : o[k]), cfg);
+
+  const escapar = (texto) => String(texto).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+
+  /* Avisa a medição sem depender dela: quem escuta `site:evento` é o sensor do
+     motor. Sem sensor na página, o evento some no ar e nada quebra. */
+  function emitir(nome, params = {}, opcoes = {}) {
+    dispatchEvent(new CustomEvent('site:evento', { detail: { nome, params, opcoes } }));
+  }
+
+  /* Nome de evento do GA4: minúsculo, sem acento, só letra número e underscore,
+     começando por letra, no máximo 40 caracteres. Nome fora dessa regra o GA4
+     descarta em silêncio, sem erro em lugar nenhum. */
+  function slugEvento(texto) {
+    return texto
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 40);
+  }
+
+  /* Todo caminho que leva ao WhatsApp de um modelo passa por aqui, para os
+     dois eventos saírem sempre iguais e sempre juntos:
+
+     1. `generate_lead`, que é A conversão. Uma só, com o modelo em parâmetro.
+        É esta que deve ser marcada como evento-chave no GA4 e importada no
+        Google Ads: o lance automático precisa do volume somado, não de 21
+        conversões com uma venda cada.
+
+     2. `btn_interesse_{marca}_{modelo}`, que é só para segmentar. Vai apenas
+        para o GA4 e NÃO deve ser marcado como evento-chave. Como não vai para
+        a Meta nem para o log, não existe risco de contar a mesma conversão
+        duas vezes. */
+  function interesseNoModelo(modelo, origem, extras = {}) {
+    if (!modelo) return;
+    const dados = {
+      origem,
+      item_id: modelo.id,
+      item_name: `${modelo.fabricante} ${modelo.nome}`,
+      item_brand: modelo.fabricante,
+      item_category: modelo.categoria || undefined,
+      ...extras,
+    };
+    emitir('generate_lead', dados);
+    emitir(slugEvento(`btn_interesse_${modelo.fabricante}_${modelo.nome}`), dados, { somenteNavegador: true });
+  }
+
+  /** Monta o link do WhatsApp com a mensagem já preenchida. */
+  function linkWhats(chave, trocas = {}) {
+    let texto = cfg.mensagens[chave] || cfg.mensagens.geral;
+    for (const [k, v] of Object.entries(trocas)) {
+      texto = texto.replaceAll(`{${k}}`, v);
+    }
+    return `https://wa.me/${cfg.whatsapp.e164}?text=${encodeURIComponent(texto)}`;
+  }
+
+  /* ── 1. Dados da loja no HTML ─────────────────────────────────────────── */
+
+  function aplicarConfig() {
+    $$('[data-config]').forEach((el) => { el.textContent = pegar(el.dataset.config) ?? ''; });
+    $$('[data-config-text]').forEach((el) => { el.textContent = pegar(el.dataset.configText) ?? ''; });
+    $$('[data-config-href]').forEach((el) => { el.href = pegar(el.dataset.configHref) ?? '#'; });
+
+    $$('[data-whats]').forEach((el) => {
+      el.href = linkWhats(el.dataset.whats);
+      el.target = '_blank';
+      el.rel = 'noopener';
+    });
+
+    const rota = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(cfg.endereco.busca)}`;
+    $$('[data-rota]').forEach((el) => { el.href = rota; });
+
+    // O botão "Preferências de cookies" (#rever-cookies) é ligado pelo sensor:
+    // consentimento tem que ser tão fácil de retirar quanto de dar (LGPD).
+
+    // Horário só aparece depois de confirmado com a loja. Ver config.js.
+    const horario = cfg.horarios.confirmado
+      ? `${cfg.horarios.semana} · ${cfg.horarios.sabado}`
+      : 'Horário: consulte pelo WhatsApp';
+    $$('[data-horarios]').forEach((el) => { el.textContent = horario; });
+  }
+
+  /* ── 2. Header e CTA flutuante ────────────────────────────────────────── */
+
+  function scrollUI() {
+    const header = $('#header');
+    const flutuante = $('#flutuante');
+    let ticking = false;
+
+    const atualizar = () => {
+      header.classList.toggle('is-fixo', window.scrollY > 8);
+      ticking = false;
+    };
+
+    addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(atualizar);
+    }, { passive: true });
+
+    atualizar();
+
+    /* O CTA flutuante fica visível desde o hero, a pedido do cliente.
+       O styleguide §06 mandava esperar 25% de rolagem, e a regra era boa no
+       papel: no hero já existem dois botões e o do header, então o flutuante
+       chega como quarto caminho para a mesma ação. Mas 25% de uma página de
+       ~24.000 px cai DEPOIS da vitrine inteira, e quem entra por anúncio e
+       não rola nunca via o botão. A decisão é do cliente e está registrada.
+
+       O quadro de espera é só para ele entrar com o fade do CSS em vez de
+       aparecer pronto junto com o resto da página. */
+    requestAnimationFrame(() => flutuante.classList.add('is-visivel'));
+  }
+
+  /* ── 3. Menu mobile ───────────────────────────────────────────────────── */
+
+  function menu() {
+    const painel = $('#menu');
+    const toggle = $('#menu-toggle');
+    if (!painel || !toggle) return;
+
+    const itens = $$('.menu__item-wrap', painel);
+    itens.forEach((item, i) => item.style.setProperty('--i', i));
+
+    const corpo = $('.menu__painel', painel);
+    const header = $('#header');
+
+    const definir = (aberto) => {
+      if (aberto) {
+        /* A barra de anúncio quebra em duas linhas no celular, então a altura
+           do header varia com o scroll. Medir na hora é o único jeito de o
+           primeiro item nunca nascer embaixo do botão de fechar. */
+        corpo.style.paddingTop = `${Math.round(header.getBoundingClientRect().bottom) + 24}px`;
+      }
+      painel.classList.toggle('is-aberto', aberto);
+      painel.setAttribute('aria-hidden', String(!aberto));
+      toggle.setAttribute('aria-expanded', String(aberto));
+      document.body.classList.toggle('is-locked', aberto);
+      document.body.classList.toggle('menu-aberto', aberto);
+      window.MOTOKKA_MOTION?.travarScroll(aberto);
+      if (aberto) {
+        $('.menu__item', painel)?.focus({ preventScroll: true });
+      }
+    };
+
+    toggle.addEventListener('click', () => definir(toggle.getAttribute('aria-expanded') !== 'true'));
+    $$('.menu__item, .menu__rodape a', painel).forEach((a) => a.addEventListener('click', () => definir(false)));
+
+    // A gaveta não ocupa a tela toda: clicar no scrim fecha, como se espera.
+    painel.addEventListener('click', (e) => {
+      if (!e.target.closest('.menu__painel')) definir(false);
+    });
+
+    addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && painel.classList.contains('is-aberto')) {
+        definir(false);
+        toggle.focus();
+      }
+    });
+
+    // Voltar para desktop com o menu aberto deixaria o body travado.
+    matchMedia('(min-width: 1081px)').addEventListener('change', (e) => {
+      if (e.matches) definir(false);
+    });
+  }
+
+  /* ── 4. Categorias ────────────────────────────────────────────────────── */
+
+  function categorias() {
+    const alvo = $('#categorias-grade');
+    if (!alvo) return;
+
+    /* Etiqueta legal no lugar de ícone. Autopropelido e ciclomotor são o MESMO
+       veículo: o que os separa é a lei, não a silhueta, então nenhum pictograma
+       honesto distingue os dois. A etiqueta distingue, e ainda usa o código de
+       cor do styleguide (verde = liberdade legal, âmbar = obrigação). */
+    // `oculta` tira a categoria SÓ do bloco de cards; ela continua no filtro da
+    // vitrine. Serve para categoria ainda não confirmada com a loja.
+    const lista = window.MOTOKKA_CATEGORIAS.filter((c) => c.id !== 'todos' && !c.oculta);
+    alvo.innerHTML = lista.map((c) => {
+      const classe = window.MOTOKKA_CLASSIFICACOES[c.id];
+      const etiqueta = classe
+        ? `<span class="tag tag--${classe.tom}">${escapar(classe.rotulo)}</span>`
+        : '';
+      return `
+      <a class="categoria" href="#modelos" data-ir-categoria="${c.id}" data-anima>
+        <span class="categoria__etiqueta">${etiqueta}</span>
+        <span class="categoria__nome">${escapar(c.nome)}</span>
+        <p class="categoria__nota">${escapar(c.nota)}</p>
+        <span class="categoria__seta" aria-hidden="true">Ver modelos →</span>
+      </a>`;
+    }).join('');
+
+    alvo.addEventListener('click', (e) => {
+      const link = e.target.closest('[data-ir-categoria]');
+      // `false`: a âncora href="#modelos" já cuida da rolagem daqui.
+      if (link) vitrine.filtrar(link.dataset.irCategoria, false, 'card_categoria');
+    });
+  }
+
+  /* ── 5. Vitrine ───────────────────────────────────────────────────────── */
+
+  const vitrine = (() => {
+    const grade = $('#vitrine-grade');
+    const vazio = $('#vitrine-vazio');
+    const barra = $('#filtro');
+    const nota = $('#filtro-nota');
+    let ativa = 'todos';
+
+    /* A vitrine segue MOTOKKA_ORDEM; quem não está nela mantém a posição do
+       catálogo, atrás dos priorizados. `Infinity` como posição padrão é o que
+       faz isso acontecer sem lista de exceção. */
+    const modelos = () => {
+      const todos = window.MOTOKKA_MODELOS || [];
+      const prioridade = window.MOTOKKA_ORDEM || [];
+      if (!prioridade.length) return todos;
+
+      const posicao = new Map(prioridade.map((id, i) => [id, i]));
+      return todos
+        .map((m, i) => ({ m, i }))
+        .sort((a, b) => {
+          const pa = posicao.has(a.m.id) ? posicao.get(a.m.id) : Infinity;
+          const pb = posicao.has(b.m.id) ? posicao.get(b.m.id) : Infinity;
+          // Empate (ambos fora da lista) resolve pela ordem do catálogo.
+          return pa - pb || a.i - b.i;
+        })
+        .map((x) => x.m);
+    };
+    const contar = (id) => (id === 'todos' ? modelos().length : modelos().filter((m) => m.categoria === id).length);
+
+    /* No máximo três números por card, sempre nesta ordem. Só entram os que o
+       fabricante confirmou: com dois, a grade fica com duas colunas em vez de
+       inventar um valor para preencher a terceira. */
+    const ORDEM_NUMEROS = [
+      ['velocidade', 'Velocidade'],
+      ['potencia', 'Potência'],
+      ['autonomia', 'Autonomia'],
+    ];
+
+    function blocoNumeros(m) {
+      const s = m.specs;
+      /* Só entra na linha de números o campo que É número: alguns modelos têm
+         a ficha em texto livre ("25 a 40 km", "2000 W ou 3000 W"), que não cabe
+         num dígito grande com unidade sobrescrita. Esses ficam só na ficha do
+         modal. Sem esta checagem o card imprimia "undefined undefined". */
+      const numerico = (v) => v && typeof v === 'object' && v.valor != null && v.unidade;
+      const disponiveis = s ? ORDEM_NUMEROS.filter(([campo]) => numerico(s[campo])) : [];
+
+      if (!disponiveis.length) {
+        return `
+          <div class="card__pendente">
+            <strong>Ficha técnica sob consulta</strong>
+            Velocidade, potência e autonomia deste modelo são confirmados pelo consultor.
+          </div>`;
+      }
+
+      const celulas = disponiveis.map(([campo, rotulo]) => `
+        <div class="card__numero">
+          <b>${s[campo].valor}<span>${escapar(s[campo].unidade)}</span></b>
+          <small>${rotulo}</small>
+        </div>`).join('');
+
+      return `<div class="card__numeros" data-colunas="${disponiveis.length}">${celulas}</div>`;
+    }
+
+    function etiquetas(m) {
+      if (!m.classificacao) return '';
+      const c = window.MOTOKKA_CLASSIFICACOES[m.classificacao];
+      if (!c) return '';
+      return `<span class="tag tag--${c.tom}">${escapar(c.rotulo)}</span>`;
+    }
+
+    function card(m) {
+      const classe = m.classificacao ? window.MOTOKKA_CLASSIFICACOES[m.classificacao] : null;
+      const categoria = classe ? classe.extenso : m.descritivo;
+      return `
+        <article class="card" data-categoria="${m.categoria || ''}" data-id="${m.id}" data-anima>
+          <button class="card__foto${m.recorte ? ' card__foto--recorte' : ''}" type="button"
+                  data-detalhes="${m.id}" aria-label="Ver detalhes do ${escapar(`${m.fabricante} ${m.nome}`)}">
+            <img src="${m.foto}" alt="${escapar(m.alt)}" loading="lazy" decoding="async" width="900" height="675">
+            <div class="card__tags u-tags">${etiquetas(m)}</div>
+          </button>
+          <div class="card__corpo">
+            <div>
+              <p class="card__categoria">${escapar(m.fabricante)} · ${escapar(categoria)}</p>
+              <h3 class="card__nome">${escapar(m.nome)}</h3>
+            </div>
+            ${blocoNumeros(m)}
+            <div class="card__acoes">
+              <a class="btn btn--primario" href="${linkWhats('modelo', { modelo: `${m.fabricante} ${m.nome}` })}" target="_blank" rel="noopener">Comprar <span aria-hidden="true">→</span></a>
+              <button class="btn btn--contorno" type="button" data-detalhes="${m.id}">+ Detalhes</button>
+            </div>
+          </div>
+        </article>`;
+    }
+
+    /* A lista que está na tela agora, já filtrada e na ordem de prioridade.
+       O modal usa isto para as setas percorrerem o mesmo recorte que a pessoa
+       escolheu, em vez do catálogo inteiro. */
+    const visiveisAgora = () =>
+      (ativa === 'todos' ? modelos() : modelos().filter((m) => m.categoria === ativa));
+
+    function render() {
+      const visiveis = visiveisAgora();
+      grade.innerHTML = visiveis.map(card).join('');
+      grade.hidden = visiveis.length === 0;
+
+      const meta = window.MOTOKKA_CATEGORIAS.find((c) => c.id === ativa);
+      nota.textContent = meta ? meta.nota : '';
+
+      if (visiveis.length === 0) {
+        vazio.hidden = false;
+        vazio.innerHTML = `
+          <p class="t-h3" style="margin-bottom:var(--mtk-12)">Estamos subindo os modelos desta categoria.</p>
+          <p style="margin:0 auto var(--mtk-24);max-width:52ch">
+            A ficha técnica de cada veículo só entra no site depois de confirmada pelo
+            fabricante. Enquanto isso, o consultor passa as opções disponíveis na hora.
+          </p>
+          <a class="btn btn--whats" data-origem="vitrine" href="${linkWhats('categoria', { categoria: meta ? meta.nome.toLowerCase() : 'mobilidade elétrica' })}" target="_blank" rel="noopener">
+            Ver opções pelo WhatsApp
+          </a>`;
+      } else {
+        vazio.hidden = true;
+      }
+
+      brilhoDeBorda();
+      window.MOTOKKA_MOTION?.revelar(grade);
+      /* A grade acabou de mudar de altura. Sem recalcular, tudo que vem abaixo
+         da vitrine fica preso em opacity 0, porque os gatilhos apontam para
+         posições que não existem mais. */
+      window.MOTOKKA_MOTION?.recalcular();
+    }
+
+    /* Depois de filtrar, traz o visitante de volta ao topo da vitrine. Sem isso,
+       trocar de uma categoria com 12 modelos para uma com 1 encolhe a página
+       vários milhares de pixels e joga a pessoa numa seção lá embaixo, sem que
+       ela tenha rolado nada. */
+    function irParaVitrine() {
+      const secao = $('#modelos');
+      if (!secao) return;
+      const raiz = getComputedStyle(document.documentElement);
+      const alturaHeader = parseFloat(raiz.getPropertyValue('--mtk-header')) || 80;
+      const alturaFiltro = barra ? barra.getBoundingClientRect().height : 0;
+      // Posiciona o topo da GRADE logo abaixo do header e da barra de filtro.
+      const deslocamento = -(alturaHeader + alturaFiltro + 24);
+      window.MOTOKKA_MOTION?.rolarPara(grade, deslocamento);
+    }
+
+    function barraFiltro() {
+      barra.innerHTML = window.MOTOKKA_CATEGORIAS.map((c) => `
+        <button class="filtro__btn" type="button" data-cat="${c.id}" aria-pressed="${c.id === ativa}">
+          ${escapar(c.nome)}
+          <span class="filtro__contagem">${contar(c.id)}</span>
+        </button>
+      `).join('');
+    }
+
+    function filtrar(id, rolar = true, origem = 'filtro') {
+      if (id !== ativa) emitir('filtrar_categoria', { categoria: id, origem });
+      ativa = id;
+      $$('.filtro__btn', barra).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.cat === id)));
+      render();
+      if (rolar) requestAnimationFrame(irParaVitrine);
+    }
+
+    /* A barra de pills gruda abaixo do header. O estado "grudado" vem de uma
+       sentinela de 1px logo acima dela: quando a sentinela sai da área visível
+       descontada a altura do header, o filtro encostou. Comparar scrollY com
+       offsetTop erraria toda vez que a altura do header mudasse de breakpoint. */
+    /**
+     * A barra de filtro gruda embaixo do header.
+     *
+     * POR QUE NAO E IntersectionObserver AQUI.
+     * Era, e estava errado. `!entrada.isIntersecting` e verdadeiro em DUAS
+     * situacoes opostas: a sentinela acima da viewport (rolou alem, deve
+     * grudar) e a sentinela abaixo (ainda nem chegou, nao deve). O codigo
+     * tratava as duas como grudada, entao a barra carregava o visual de
+     * grudada desde o load e PISCAVA para o estado normal justo quando a
+     * pessoa chegava na vitrine.
+     *
+     * Comparar a geometria resolve porque a comparacao e SINALIZADA: `top`
+     * negativo e acima, `top` grande e abaixo. O IntersectionObserver so sabe
+     * dizer "cruza ou nao cruza".
+     *
+     * O custo e um getBoundingClientRect por quadro COM rolagem acontecendo,
+     * que e O(1) e nao forca layout: o navegador ja calculou o que precisa
+     * para rolar. A altura do header fica em cache porque getComputedStyle
+     * todo quadro seria caro de verdade.
+     */
+    function grudar() {
+      const barraFiltroEl = $('#filtro');
+      const sentinela = $('#filtro-sentinela');
+      if (!barraFiltroEl || !sentinela) return;
+
+      let alturaHeader = 80;
+      const medirHeader = () => {
+        const raiz = getComputedStyle(document.documentElement);
+        alturaHeader = parseFloat(raiz.getPropertyValue('--mtk-header')) || 80;
+      };
+
+      let pendente = false;
+      const conferir = () => {
+        pendente = false;
+        barraFiltroEl.classList.toggle(
+          'is-fixo',
+          sentinela.getBoundingClientRect().top < alturaHeader + 10,
+        );
+      };
+
+      const agendar = () => {
+        if (pendente) return;
+        pendente = true;
+        requestAnimationFrame(conferir);
+      };
+
+      medirHeader();
+      conferir(); // estado correto ja na carga, sem esperar a primeira rolagem
+      addEventListener('scroll', agendar, { passive: true });
+
+      /* Filtrar muda a altura da pagina e pode mover a sentinela sem gerar
+         scroll: o `load` cobre a fonte tardia, e o `resize` cobre a troca de
+         breakpoint, que muda a altura do header. */
+      addEventListener('load', () => { medirHeader(); conferir(); });
+      let agendado = null;
+      addEventListener('resize', () => {
+        clearTimeout(agendado);
+        agendado = setTimeout(() => { medirHeader(); conferir(); }, 150);
+      });
+    }
+
+    function iniciar() {
+      if (!grade) return;
+      barraFiltro();
+      render();
+      grudar();
+      barra.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-cat]');
+        if (btn) filtrar(btn.dataset.cat);
+      });
+
+      /* Fotos e vídeos que chegam depois também mudam a altura da página. */
+      addEventListener('load', () => window.MOTOKKA_MOTION?.recalcular());
+      grade.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-detalhes]');
+        if (btn) { modal.abrir(btn.dataset.detalhes, btn); return; }
+
+        const comprar = e.target.closest('.card a[href*="wa.me"]');
+        if (comprar) {
+          const card = comprar.closest('.card');
+          comprar.dataset.rastreado = '1'; // já contado aqui, não repetir na delegação
+          interesseNoModelo(modelos().find((x) => x.id === card?.dataset.id), 'card');
+        }
+      });
+    }
+
+    return { iniciar, filtrar, visiveis: visiveisAgora };
+  })();
+
+  /* ── 6. Facho de luz na borda do card ─────────────────────────────────
+     Duas variáveis CSS: proximidade da borda e ângulo do cursor. Nada anima
+     em JS: o CSS faz o resto. A proximidade projeta o vetor centro→cursor
+     até a moldura retangular, por isso chega a 100 tanto na quina quanto no
+     meio de uma aresta. */
+
+  function brilhoDeBorda() {
+    if (matchMedia('(hover: none)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    $$('.card').forEach((card) => {
+      if (card.dataset.brilho === 'on') return;
+      card.dataset.brilho = 'on';
+
+      let pendente = false;
+      let ultimo = null;
+
+      const escrever = () => {
+        pendente = false;
+        if (!ultimo) return;
+        card.style.setProperty('--brilho', ultimo.brilho.toFixed(3));
+        card.style.setProperty('--angulo', `${ultimo.angulo.toFixed(1)}deg`);
+      };
+
+      card.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+
+        const kx = dx === 0 ? Infinity : (r.width / 2) / Math.abs(dx);
+        const ky = dy === 0 ? Infinity : (r.height / 2) / Math.abs(dy);
+        const proximidade = Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
+
+        let angulo = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+        if (angulo < 0) angulo += 360;
+
+        // Só acende no terço externo. No centro do card o facho fica apagado.
+        ultimo = { brilho: Math.max(0, (proximidade - 0.35) / 0.65), angulo };
+        if (!pendente) {
+          pendente = true;
+          requestAnimationFrame(escrever);
+        }
+      });
+
+      card.addEventListener('pointerleave', () => {
+        ultimo = null;
+        card.style.setProperty('--brilho', '0');
+      });
+    });
+  }
+
+  /* ── 7. Lightbox da galeria ───────────────────────────────────────────
+     Existe por um motivo só: o slider recorta para preencher o quadro, e às
+     vezes o visitante quer ver a moto inteira. Aqui a foto aparece em
+     `contain`, sem corte. */
+
+  const lightbox = (() => {
+    const raiz = $('#lightbox');
+    let fotos = [];
+    let indice = 0;
+    let voltarPara = null;
+
+    function pintar() {
+      const foto = fotos[indice];
+      if (!foto) return;
+      $('#lightbox-foto').src = foto.src;
+      $('#lightbox-foto').alt = foto.alt || '';
+      $('#lightbox-contador').textContent = `${indice + 1} / ${fotos.length}`;
+      const soUma = fotos.length < 2;
+      $$('.lightbox__seta', raiz).forEach((b) => { b.hidden = soUma; });
+      $('#lightbox-contador').hidden = soUma;
+    }
+
+    function andar(passo) {
+      if (!fotos.length) return;
+      indice = (indice + passo + fotos.length) % fotos.length;
+      pintar();
+    }
+
+    function abrir(lista, inicio = 0) {
+      if (!raiz || !lista?.length) return;
+      fotos = lista;
+      indice = Math.max(0, Math.min(inicio, lista.length - 1));
+      voltarPara = document.activeElement;
+      pintar();
+      raiz.classList.add('is-aberto');
+      raiz.setAttribute('aria-hidden', 'false');
+      $('.lightbox__fechar', raiz).focus({ preventScroll: true });
+    }
+
+    function fechar() {
+      if (!raiz || !raiz.classList.contains('is-aberto')) return;
+      raiz.classList.remove('is-aberto');
+      raiz.setAttribute('aria-hidden', 'true');
+      voltarPara?.focus?.({ preventScroll: true });
+      voltarPara = null;
+    }
+
+    const estaAberto = () => Boolean(raiz?.classList.contains('is-aberto'));
+
+    function iniciar() {
+      if (!raiz) return;
+
+      raiz.addEventListener('click', (e) => {
+        const passo = e.target.closest('[data-lightbox-passo]');
+        if (passo) { andar(Number(passo.dataset.lightboxPasso)); return; }
+        if (e.target.closest('[data-fechar-lightbox]')) { fechar(); return; }
+        // Clicar no fundo ou na própria foto fecha: o gesto óbvio é sair.
+        fechar();
+      });
+
+      addEventListener('keydown', (e) => {
+        if (!estaAberto()) return;
+        if (e.key === 'Escape') { e.stopPropagation(); fechar(); }
+        if (e.key === 'ArrowRight') andar(1);
+        if (e.key === 'ArrowLeft') andar(-1);
+      }, true);
+    }
+
+    return { iniciar, abrir, fechar, estaAberto };
+  })();
+
+  /* ── 8. Modal de detalhes ─────────────────────────────────────────────── */
+
+  const modal = (() => {
+    const raiz = $('#modal');
+    let origem = null;
+    let atual = null;
+    let corAtiva = 0;
+
+    /* Cada cor pode ter conjunto próprio de fotos. Enquanto não tiver, o swatch
+       apenas muda a mensagem do WhatsApp e a galeria segue a do modelo. */
+    /* A cor troca as fotos do VEICULO INTEIRO. As marcadas com `detalhe: true`
+       ficam sempre, porque chave, banco e suspensao nao mudam de cor: some-las
+       a cada troca obrigaria a pessoa a voltar para a primeira cor so para ver
+       o acabamento, e ela nao tem como adivinhar que precisa fazer isso. */
+    function fotosDaCorAtiva(m) {
+      const daCor = m.cores?.[corAtiva]?.galeria;
+      if (!daCor) return m.galeria || [];
+      return [...daCor, ...(m.galeria || []).filter((f) => f.detalhe)];
+    }
+
+    /* Declarado aqui, e nao junto do swatch: a galeria usa isto para validar o
+       `fundo` de cada foto, e ela vem antes no arquivo. */
+    const HEX_VALIDO = /^#[0-9a-fA-F]{6}$/;
+
+    function galeria(m, indice = 0) {
+      const trilho = $('#modal-slider');
+      const fotos = fotosDaCorAtiva(m);
+      if (!fotos.length) return;
+      const i = Math.min(indice, fotos.length - 1);
+
+      /* Três enquadramentos, nesta ordem de precedência:
+           is-recorte  recorte com alfa: cabe inteiro + sombra projetada
+           is-inteira  foto de estúdio: cabe inteira, sem sombra
+           (nenhuma)   preenche o quadro, para close de detalhe e foto de rua */
+      trilho.innerHTML = fotos.map((f, k) => {
+        const recorte = f.recorte !== false && m.recorte;
+        const enquadra = recorte ? 'is-recorte' : (f.inteira ? 'is-inteira' : '');
+        return `
+          <div class="modal__slide" role="group" aria-roledescription="slide"
+               aria-label="${k + 1} de ${fotos.length}">
+            <img src="${f.src}" alt="${escapar(f.alt)}" draggable="false"
+                 class="${enquadra}"${f.fundo && HEX_VALIDO.test(f.fundo) ? ` style="background:${f.fundo}"` : ''} decoding="async">
+          </div>`;
+      }).join('');
+
+      // Com uma foto só não há o que escolher, e a fileira roubaria altura da foto.
+      $('#modal-miniaturas').hidden = fotos.length < 2;
+      $('.modal__galeria').classList.toggle('tem-miniaturas', fotos.length > 1);
+      $('#modal-miniaturas').innerHTML = fotos.map((f, k) => `
+        <button class="modal__mini" type="button" data-foto="${k}" aria-current="${k === i}"
+                aria-label="Ver foto ${k + 1} de ${fotos.length}">
+          <img src="${f.src}" alt="" loading="lazy" decoding="async">
+        </button>
+      `).join('');
+
+      irPara(i, 'auto');
+    }
+
+    /* ── Slider ────────────────────────────────────────────────────────────
+       O snap e a rolagem são do CSS, o que dá swipe nativo no toque de graça.
+       O JS entra só para: arrastar com o mouse (que o browser não faz),
+       manter a miniatura em sincronia e responder às setas do teclado. */
+
+    let houveArrasto = false;
+    const trilhoArrastou = () => houveArrasto;
+
+    function slideAtual() {
+      const trilho = $('#modal-slider');
+      const largura = trilho.clientWidth || 1;
+      return Math.round(trilho.scrollLeft / largura);
+    }
+
+    function irPara(indice, comportamento = 'smooth') {
+      const trilho = $('#modal-slider');
+      const slides = trilho.children.length;
+      if (!slides) return;
+      const alvo = Math.max(0, Math.min(indice, slides - 1));
+      trilho.scrollTo({ left: alvo * trilho.clientWidth, behavior: comportamento });
+      marcarMiniatura(alvo);
+    }
+
+    function marcarMiniatura(indice) {
+      $$('#modal-miniaturas .modal__mini').forEach((b, k) => {
+        b.setAttribute('aria-current', String(k === indice));
+      });
+    }
+
+    function ligarSlider() {
+      const trilho = $('#modal-slider');
+      if (!trilho) return;
+
+      let pendente = false;
+      trilho.addEventListener('scroll', () => {
+        if (pendente) return;
+        pendente = true;
+        requestAnimationFrame(() => {
+          pendente = false;
+          marcarMiniatura(slideAtual());
+        });
+      }, { passive: true });
+
+      trilho.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') { e.preventDefault(); irPara(slideAtual() + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); irPara(slideAtual() - 1); }
+      });
+
+      // Arrasto com mouse. No toque o próprio browser já resolve.
+      let arrastando = false;
+      let inicioX = 0;
+      let inicioScroll = 0;
+      let moveu = 0;
+
+      trilho.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') return;
+        arrastando = true;
+        moveu = 0;
+        inicioX = e.clientX;
+        inicioScroll = trilho.scrollLeft;
+        trilho.classList.add('is-arrastando');
+        trilho.setPointerCapture(e.pointerId);
+      });
+
+      trilho.addEventListener('pointermove', (e) => {
+        if (!arrastando) return;
+        const delta = e.clientX - inicioX;
+        moveu = Math.abs(delta);
+        trilho.scrollLeft = inicioScroll - delta;
+      });
+
+      const soltar = (e) => {
+        if (!arrastando) return;
+        arrastando = false;
+        // Um arrasto termina em `click`. Sem esta marca, soltar o mouse depois
+        // de deslizar abriria o lightbox junto.
+        houveArrasto = moveu > 6;
+        setTimeout(() => { houveArrasto = false; }, 0);
+        trilho.classList.remove('is-arrastando');
+        if (trilho.hasPointerCapture?.(e.pointerId)) trilho.releasePointerCapture(e.pointerId);
+
+        /* Passou de um quinto da largura, vai para o próximo. Abaixo disso,
+           volta: um arrasto curto quase sempre é hesitação, não intenção. */
+        const largura = trilho.clientWidth || 1;
+        const partiu = Math.round(inicioScroll / largura);
+        const delta = trilho.scrollLeft - inicioScroll;
+        if (moveu > largura * 0.2) irPara(partiu + (delta > 0 ? 1 : -1));
+        else irPara(partiu);
+      };
+
+      trilho.addEventListener('pointerup', soltar);
+      trilho.addEventListener('pointercancel', soltar);
+    }
+
+    function ficha(m) {
+      const alvo = $('#modal-ficha');
+      if (!m.specs) {
+        alvo.innerHTML = `
+          <div style="grid-template-columns:1fr">
+            <dt style="color:rgba(255,255,255,.78);line-height:1.6">
+              A ficha técnica completa deste modelo é confirmada pelo consultor.
+              Nenhum número entra aqui sem confirmação por escrito do fabricante.
+            </dt>
+          </div>`;
+        return;
+      }
+      /* Campo sem dado simplesmente não aparece. Listar dez linhas de "não
+         informado" comunica ausência, não especificação. */
+      alvo.innerHTML = window.MOTOKKA_FICHA_ORDEM
+        .filter(([chave]) => m.specs[chave] != null)
+        .map(([chave, rotulo]) => {
+          const bruto = m.specs[chave];
+          const valor = typeof bruto === 'object' ? `${bruto.valor} ${bruto.unidade}` : bruto;
+          /* Numero com condicao carrega a condicao NA MESMA LINHA. Os 100 km
+             do Eco sao com 2 baterias e os 45 km do X11 sao melhor caso:
+             mostrados como numero puro, parecem comparaveis com os dos outros
+             modelos. Rodape com asterisco nao resolve, porque ninguem
+             associa de volta. */
+          const nota = typeof bruto === 'object' && bruto.nota
+            ? `<small class="ficha__nota">${escapar(bruto.nota)}</small>`
+            : '';
+          return `<div><dt>${rotulo}</dt><dd>${escapar(valor)}${nota}</dd></div>`;
+        }).join('');
+    }
+
+    function equipamentos(m) {
+      const bloco = $('#modal-equipamentos');
+      const itens = m.equipamentos || [];
+      bloco.hidden = !itens.length;
+      if (!itens.length) return;
+      $('#modal-equipamentos-lista').innerHTML =
+        itens.map((item) => `<li>${escapar(item)}</li>`).join('');
+    }
+
+    /**
+     * O fundo da bolinha do swatch, em ordem de precedencia.
+     *
+     *   bicolor -> degrade -> imagem -> hex
+     *
+     * SEGURANCA. O valor entra numa declaracao CSS dentro de um atributo
+     * `style`, entao sao DOIS escapes aninhados: o de HTML, que `escapar`
+     * resolve, e o de CSS, que ele nao alcanca. Um caminho com aspas,
+     * parenteses ou barra invertida FECHA a `url()` e o resto vira declaracao
+     * arbitraria. Verificado: `x.svg'); background:red; --x:url('` pintava a
+     * bolinha de vermelho.
+     *
+     * Caminho suspeito e DESCARTADO, nao remendado: escapar caractere por
+     * caractere convida a errar um. Ele cai no `hex`, que e a reserva.
+     *
+     * Nos dois casos de gradiente o hex e validado contra /^#[0-9a-fA-F]{6}$/
+     * antes de entrar, entao nao sobra superficie.
+     */
+    const parDeHex = (v) => Array.isArray(v) && v.length === 2 && v.every((h) => HEX_VALIDO.test(h));
+
+    function fundoDoSwatch(c) {
+      // Divisao dura: e assim que a lataria sai da fabrica numa pintura de
+      // duas cores. Degrade suave aqui mentiria sobre o produto.
+      if (parDeHex(c.bicolor)) {
+        return `background:linear-gradient(90deg, ${c.bicolor[0]} 50%, ${c.bicolor[1]} 50%)`;
+      }
+      // Metalico: um hex chapado achata a cor e nao parece a moto.
+      if (parDeHex(c.degrade)) {
+        return `background:linear-gradient(${c.degrade[0]}, ${c.degrade[1]})`;
+      }
+      if (c.imagem && !/["'()\\]/.test(c.imagem)) {
+        return `background:url('${c.imagem}') center/cover no-repeat`;
+      }
+      return `background:${HEX_VALIDO.test(c.hex || '') ? c.hex : 'transparent'}`;
+    }
+
+    function cores(m) {
+      const bloco = $('#modal-cores');
+      if (!m.cores || !m.cores.length) { bloco.hidden = true; return; }
+      bloco.hidden = false;
+
+      // O nome sai da bolinha e vai para o rótulo, mas continua no aria-label:
+      // swatch sem nome acessível é botão mudo para quem usa leitor de tela.
+      $('#modal-cor-nome').textContent = m.cores[corAtiva].nome;
+      /* Uma cor só não tem o que escolher: fica o rótulo, que informa a cor e
+         entra na mensagem do WhatsApp, e sai a bolinha, que seria um botão
+         sem função. Mesma regra das miniaturas com uma foto só. */
+      $('#modal-swatches').hidden = m.cores.length < 2;
+      $('#modal-swatches').innerHTML = m.cores.map((c, i) => `
+        <button class="modal__swatch" type="button" data-cor="${i}"
+                aria-pressed="${i === corAtiva}" aria-label="Cor ${escapar(c.nome)}"
+                title="${escapar(c.nome)}">
+          <i style="${fundoDoSwatch(c)}" aria-hidden="true"></i>
+        </button>
+      `).join('');
+    }
+
+    function cta() {
+      const botao = $('#modal-cta');
+      const nome = `${atual.fabricante} ${atual.nome}`;
+      const cor = atual.cores?.[corAtiva]?.nome;
+      botao.href = cor
+        ? linkWhats('modeloCor', { modelo: nome, cor })
+        : linkWhats('modelo', { modelo: nome });
+    }
+
+    /* `irParaModelo`, e não `irPara`: já existe um `irPara(indice)` neste
+       escopo que move o SLIDER de fotos. Nome repetido aqui sombrearia a
+       navegação da galeria. */
+    function vizinhos() {
+      const lista = vitrine.visiveis();
+      const i = lista.findIndex((m) => m.id === atual?.id);
+      if (i < 0) return { lista, i, anterior: null, proximo: null };
+      return {
+        lista,
+        i,
+        anterior: lista[(i - 1 + lista.length) % lista.length] || null,
+        proximo: lista[(i + 1) % lista.length] || null,
+      };
+    }
+
+    function setas() {
+      const bloco = $('#modal-navegacao');
+      if (!bloco) return;
+      const { lista, i, anterior, proximo } = vizinhos();
+
+      // Com um modelo só na tela, navegar não tem para onde ir.
+      bloco.hidden = lista.length < 2 || i < 0;
+      if (bloco.hidden) return;
+
+      $('#modal-anterior').setAttribute('aria-label', `Ver ${anterior.fabricante} ${anterior.nome}`);
+      $('#modal-proximo').setAttribute('aria-label', `Ver ${proximo.fabricante} ${proximo.nome}`);
+      $('#modal-posicao').textContent = `${i + 1} de ${lista.length}`;
+    }
+
+    function irParaModelo(direcao) {
+      const { anterior, proximo } = vizinhos();
+      const alvo = direcao < 0 ? anterior : proximo;
+      if (alvo) abrir(alvo.id);
+    }
+
+    function abrir(id, gatilho) {
+      atual = (window.MOTOKKA_MODELOS || []).find((m) => m.id === id);
+      if (!atual) return;
+      /* Só guarda o gatilho quando ele vem. Navegando de modelo em modelo, o
+         foco tem que voltar para o card de onde a pessoa entrou, e não para um
+         botão que ela nunca tocou. */
+      if (gatilho !== undefined) origem = gatilho || null;
+      corAtiva = 0;
+
+      const classe = atual.classificacao ? window.MOTOKKA_CLASSIFICACOES[atual.classificacao] : null;
+      $('#modal-eyebrow').textContent = `${atual.fabricante} · ${classe ? classe.extenso : atual.descritivo}`;
+      $('#modal-titulo').textContent = atual.nome;
+      $('#modal-tags').innerHTML = classe ? `<span class="tag tag--${classe.tom}">${escapar(classe.rotulo)}</span>` : '';
+
+      const chamada = $('#modal-chamada');
+      chamada.textContent = atual.chamada || '';
+      chamada.hidden = !atual.chamada;
+
+      galeria(atual);
+      ficha(atual);
+      equipamentos(atual);
+      cores(atual);
+      cta();
+      setas();
+      $('#modal-corpo').scrollTop = 0;
+
+      emitir('view_item', {
+        item_id: atual.id,
+        item_name: `${atual.fabricante} ${atual.nome}`,
+        item_brand: atual.fabricante,
+        item_category: atual.categoria || undefined,
+        cor: atual.cores?.[corAtiva]?.nome,
+      });
+
+      raiz.classList.add('is-aberto');
+      raiz.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('is-locked');
+      window.MOTOKKA_MOTION?.travarScroll(true);
+      history.replaceState(null, '', `#modelo/${atual.id}`);
+      $('#modal-titulo').setAttribute('tabindex', '-1');
+      $('#modal-titulo').focus({ preventScroll: true });
+    }
+
+    function fechar() {
+      lightbox.fechar();
+      raiz.classList.remove('is-aberto');
+      raiz.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('is-locked');
+      window.MOTOKKA_MOTION?.travarScroll(false);
+      if (location.hash.startsWith('#modelo/')) {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+      origem?.focus({ preventScroll: true });
+      origem = null;
+      atual = null;
+    }
+
+    function iniciar() {
+      if (!raiz) return;
+      ligarSlider();
+      lightbox.iniciar();
+
+      raiz.addEventListener('click', (e) => {
+        if (e.target.closest('[data-fechar-modal]')) { fechar(); return; }
+
+        const mini = e.target.closest('[data-foto]');
+        if (mini) { irPara(Number(mini.dataset.foto)); return; }
+
+        const seta = e.target.closest('[data-modelo-passo]');
+        if (seta) { irParaModelo(Number(seta.dataset.modeloPasso)); return; }
+
+        /* Clique na foto grande abre a versão inteira, sem corte.
+           O alvo é o TRILHO, não o slide: durante o arrasto o trilho captura o
+           ponteiro, e o browser passa a entregar o clique nele em vez de na
+           imagem. Testar só o slide fazia o clique simples nunca casar. */
+        if (e.target.closest('.modal__slider') && !trilhoArrastou()) {
+          lightbox.abrir(fotosDaCorAtiva(atual), slideAtual());
+          return;
+        }
+
+        /* `botaoCta`, e nao `cta`: existe uma funcao cta() neste mesmo escopo,
+           que remonta o link do WhatsApp com a cor escolhida. Chamar a variavel
+           de `cta` sombreia a funcao, e o clique no swatch morre com
+           "cta is not a function" DEPOIS de ja ter trocado a galeria. O sintoma
+           e traicoeiro: a foto muda, entao parece que funcionou, mas a mensagem
+           do WhatsApp continua saindo com a primeira cor da lista. */
+        const botaoCta = e.target.closest('#modal-cta');
+        if (botaoCta && atual) {
+          botaoCta.dataset.rastreado = '1'; // já contado aqui; o sensor ignora link marcado
+          interesseNoModelo(atual, 'ficha', { cor: atual.cores?.[corAtiva]?.nome });
+          return;
+        }
+
+        const swatch = e.target.closest('[data-cor]');
+        if (swatch) {
+          /* Compara pelo SRC da primeira foto, nao pela referencia do array:
+             fotosDaCorAtiva monta um array novo a cada chamada quando a cor tem
+             galeria, entao `!==` seria sempre verdadeiro e o slider voltaria ao
+             inicio ate trocando para uma cor sem foto propria. */
+          const anterior = fotosDaCorAtiva(atual)[0]?.src;
+          corAtiva = Number(swatch.dataset.cor);
+          cores(atual);
+          if (fotosDaCorAtiva(atual)[0]?.src !== anterior) galeria(atual, 0);
+          cta();
+        }
+      });
+
+      addEventListener('keydown', (e) => {
+        if (!raiz.classList.contains('is-aberto')) return;
+        // Com o lightbox por cima, o ESC é dele.
+        if (lightbox.estaAberto()) return;
+        if (e.key === 'Escape') { fechar(); return; }
+        if (e.key !== 'Tab') return;
+
+        // Prende o foco dentro do modal enquanto ele estiver aberto.
+        const focaveis = $$('button, a[href], [tabindex]:not([tabindex="-1"])', raiz)
+          .filter((el) => el.offsetParent !== null);
+        if (!focaveis.length) return;
+        const primeiro = focaveis[0];
+        const ultimo = focaveis[focaveis.length - 1];
+        if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+        else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+      });
+
+      /* Âncora compartilhável: /#modelo/evon-pulse abre o modal direto.
+         O `hashchange` não é luxo: colar a âncora com a página JÁ aberta é uma
+         navegação same-document, o script não roda de novo e o link não faria
+         nada. É exatamente o caso de quem recebe o link de um amigo que já
+         estava no site. */
+      const abrirPorHash = () => {
+        const hash = location.hash.match(/^#modelo\/(.+)$/);
+        if (hash) abrir(decodeURIComponent(hash[1]), null);
+      };
+      addEventListener('hashchange', abrirPorHash);
+      requestAnimationFrame(abrirPorHash);
+    }
+
+    return { iniciar, abrir };
+  })();
+
+  /* ── 9. FAQ ───────────────────────────────────────────────────────────── */
+
+  function faq() {
+    const alvo = $('#faq-lista');
+    if (!alvo) return;
+
+    alvo.innerHTML = (window.MOTOKKA_FAQ || []).map((f, i) => `
+      <div class="faq__item${i === 0 ? ' is-aberto' : ''}">
+        <h3 style="margin:0">
+          <button class="faq__botao" type="button" aria-expanded="${i === 0}" aria-controls="faq-r${i}">
+            <span>${escapar(f.q)}</span>
+            <span class="faq__sinal" aria-hidden="true">${i === 0 ? '−' : '+'}</span>
+          </button>
+        </h3>
+        <div class="faq__resposta" id="faq-r${i}" role="region">
+          <div><p>${escapar(f.a)}</p></div>
+        </div>
+      </div>
+    `).join('');
+
+    alvo.addEventListener('click', (e) => {
+      const btn = e.target.closest('.faq__botao');
+      if (!btn) return;
+      const item = btn.closest('.faq__item');
+      const aberto = item.classList.toggle('is-aberto');
+      btn.setAttribute('aria-expanded', String(aberto));
+      $('.faq__sinal', btn).textContent = aberto ? '−' : '+';
+    });
+  }
+
+  /* ── 10. Depoimentos ───────────────────────────────────────────────────── */
+
+  function depoimentos() {
+    const lista = window.MOTOKKA_DEPOIMENTOS || [];
+    const secao = $('#depoimentos');
+    if (!secao || !lista.length) return; // sem depoimento real, o bloco não existe
+
+    secao.hidden = false;
+    $('#depoimentos-grade').innerHTML = lista.map((d) => `
+      <figure class="depoimento" data-anima style="margin:0">
+        <div class="depoimento__estrelas" aria-label="${d.estrelas} de 5 estrelas">${'★'.repeat(d.estrelas)}</div>
+        <blockquote class="depoimento__texto" style="margin:0">${escapar(d.texto)}</blockquote>
+        <figcaption class="depoimento__autor">
+          <span class="depoimento__inicial" aria-hidden="true">${escapar(d.nome.split(' ').map((p) => p[0]).slice(0, 2).join(''))}</span>
+          <span class="depoimento__meta">
+            <span class="depoimento__nome">${escapar(d.nome)}</span>
+            <span class="depoimento__modelo">${escapar(d.modelo)}</span>
+          </span>
+        </figcaption>
+      </figure>
+    `).join('');
+  }
+
+  /* ── 11. Simulador de custo ───────────────────────────────────────────── */
+
+  function simulador() {
+    const km = $('#km-dia');
+    if (!km) return;
+
+    // Premissas exibidas na legenda do bloco: mudou aqui, muda lá.
+    const DIAS = 30;
+    const PRECO_GASOLINA = 6.20;   // R$/litro
+    const CONSUMO_MOTO = 35;       // km/litro
+    const PRECO_KWH = 0.85;        // R$/kWh
+    const CONSUMO_ELETRICO = 0.03; // kWh/km
+
+    const real = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+
+    const atualizar = () => {
+      const dia = Number(km.value);
+      const mes = dia * DIAS;
+      const gasolina = (mes / CONSUMO_MOTO) * PRECO_GASOLINA;
+      const eletrico = mes * CONSUMO_ELETRICO * PRECO_KWH;
+
+      $('#km-saida').textContent = `${dia} km/dia`;
+      $('#custo-gasolina').textContent = real.format(gasolina);
+      $('#custo-eletrico').textContent = real.format(eletrico);
+      $('#economia-nota').textContent =
+        `Sobram cerca de ${real.format(gasolina - eletrico)} por mês. Em um ano, ${real.format((gasolina - eletrico) * 12)}.`;
+      // A barra da tomada é desenhada na proporção do custo da gasolina.
+      km.closest('.conta')?.style.setProperty('--proporcao', (eletrico / gasolina).toFixed(3));
+    };
+
+    km.addEventListener('input', atualizar);
+    atualizar();
+  }
+
+  /* ── 12. Formulário de test ride ──────────────────────────────────────── */
+
+  function formulario() {
+    const form = $('#form-testride');
+    if (!form) return;
+
+    const marcar = (campo, erroId, mensagem) => {
+      const erro = $(`#${erroId}`);
+      campo.setAttribute('aria-invalid', String(Boolean(mensagem)));
+      erro.textContent = mensagem || '';
+      return !mensagem;
+    };
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nome = $('#tr-nome');
+      const whats = $('#tr-whats');
+
+      const nomeOk = marcar(nome, 'erro-nome',
+        nome.value.trim().length < 2 ? 'Informe o seu nome para o consultor te chamar.' : '');
+
+      // 10 ou 11 dígitos: fixo com DDD ou celular com nono dígito.
+      const digitos = whats.value.replace(/\D/g, '');
+      const whatsOk = marcar(whats, 'erro-whats',
+        digitos.length < 10 || digitos.length > 11 ? 'Informe o WhatsApp com DDD, ex.: (16) 90000-0000.' : '');
+
+      if (!nomeOk || !whatsOk) {
+        (!nomeOk ? nome : whats).focus();
+        return;
+      }
+
+      const url = linkWhats('testRide', {
+        nome: nome.value.trim(),
+        interesse: $('#tr-interesse').value,
+      });
+
+      /* Conversão principal da página. `telefone` e `nome_lead` vão só para a
+         fila de lead do motor (em claro) e para a CAPI em SHA-256, com aceite.
+         Sem `value`: os modelos não têm preço no site, e valor inventado
+         distorce o lance do Google Ads. */
+      emitir('generate_lead', {
+        origem: 'formulario',
+        interesse: $('#tr-interesse').value,
+        telefone: whats.value,
+        nome_lead: nome.value.trim(),
+      });
+
+      window.open(url, '_blank', 'noopener');
+
+      // Sucesso substitui o formulário inteiro por confirmação + WhatsApp.
+      form.outerHTML = `
+        <div class="form__sucesso" role="status">
+          <h3 class="t-h3">Quase lá, ${escapar(nome.value.trim().split(' ')[0])}.</h3>
+          <p style="margin:0">
+            Abrimos o WhatsApp com a sua mensagem pronta. Se a janela não apareceu,
+            toque no botão abaixo. O consultor responde em horário comercial.
+          </p>
+          <a class="btn btn--primario" href="${url}" target="_blank" rel="noopener" data-rastreado="1" style="justify-self:center">
+            Abrir o WhatsApp
+          </a>
+        </div>`;
+    });
+  }
+
+  /* ── 13. Mídia pesada só quando faz sentido ───────────────────────────── */
+
+  function midia() {
+    /* O hero toca sempre: automatico, mudo e em loop, por decisao do cliente.
+       O vídeo nao tem faixa de audio nenhuma, entao nao ha o que silenciar
+       alem do atributo `muted`, que e o que libera o autoplay nos navegadores.
+
+       NOTA DE ACESSIBILIDADE, registrada de proposito: conteudo que comeca
+       sozinho e passa de 5 segundos deveria ter um jeito de pausar (WCAG
+       2.2.2), e este roda 9,4s em loop. O controle foi retirado a pedido, com
+       a consequencia conhecida. Para devolve-lo, ver o historico do git. */
+
+    const anexar = (video, src) => {
+      if (!src || video.src) return;
+      video.src = src;
+      video.addEventListener('canplay', () => video.classList.add('is-pronto'), { once: true });
+      video.play().catch(() => { /* autoplay bloqueado: o poster fica */ });
+    };
+
+    const hero = $('#hero-video');
+    if (hero) {
+      const mobile = matchMedia('(max-width: 760px)').matches;
+      anexar(hero, mobile ? hero.dataset.srcMobile : hero.dataset.src);
+    }
+
+    // Vídeos de apoio só carregam quando entram na tela.
+    const lazy = $$('[data-lazy-video]');
+    if (!lazy.length) return;
+
+    const obs = new IntersectionObserver((entradas) => {
+      entradas.forEach((entrada) => {
+        if (!entrada.isIntersecting) return;
+        anexar(entrada.target, entrada.target.dataset.src);
+        obs.unobserve(entrada.target);
+      });
+    }, { rootMargin: '200px' });
+
+    lazy.forEach((v) => obs.observe(v));
+  }
+
+  /* ── 14. Mapa ─────────────────────────────────────────────────────────── */
+
+  function mapa() {
+    const frame = $('#mapa');
+    if (!frame) return;
+    const src = `https://www.google.com/maps?q=${encodeURIComponent(cfg.endereco.busca)}&output=embed`;
+
+    // Só monta o iframe quando o rodapé se aproxima, para o Google ficar fora do first paint.
+    const obs = new IntersectionObserver((entradas, o) => {
+      if (!entradas[0].isIntersecting) return;
+      frame.src = src;
+      o.disconnect();
+    }, { rootMargin: '300px' });
+    obs.observe(frame);
+  }
+
+  /* ── 15. Letreiro de clientes ─────────────────────────────────────────── */
+
+  function letreiro() {
+    const raiz = $('[data-letreiro]');
+    if (!raiz) return;
+
+    // Movimento reduzido: fica a fileira que rola com o dedo, sem cópia nem animação.
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const trilho = $('.letreiro__trilho', raiz);
+
+    // A cópia emenda o fim no começo. Para leitor de tela ela não existe.
+    [...trilho.children].forEach((item) => {
+      const copia = item.cloneNode(true);
+      copia.setAttribute('aria-hidden', 'true');
+      $$('img', copia).forEach((img) => { img.alt = ''; });
+      trilho.appendChild(copia);
+    });
+
+    /* Velocidade em px por segundo, e não duração fixa: com duração fixa, a
+       fileira do celular (fotos menores) andaria mais devagar que a do desktop. */
+    const PX_POR_SEGUNDO = 40;
+    const medir = () => {
+      trilho.style.setProperty('--letreiro-duracao', `${trilho.offsetWidth / 2 / PX_POR_SEGUNDO}s`);
+    };
+    medir();
+    new ResizeObserver(medir).observe(raiz);
+
+    raiz.classList.add('is-pronto');
+
+    new IntersectionObserver(([entrada]) => {
+      raiz.classList.toggle('is-parado', !entrada.isIntersecting);
+    }).observe(raiz);
+  }
+
+  /* ── partida ──────────────────────────────────────────────────────────── */
+
+  function iniciar() {
+    aplicarConfig();
+    scrollUI();
+    menu();
+    categorias();
+    vitrine.iniciar();
+    modal.iniciar();
+    faq();
+    depoimentos();
+    simulador();
+    formulario();
+    midia();
+    mapa();
+    letreiro();
+
+    /* motion.js roda antes daqui (é `defer`, e este init espera o DOMContentLoaded),
+       então tudo que foi injetado agora ainda não tem tween. Sem esta chamada, o
+       conteúdo dinâmico ficaria preso em opacity: 0 para sempre. */
+    window.MOTOKKA_MOTION?.revelar();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar);
+  } else {
+    iniciar();
+  }
+})();

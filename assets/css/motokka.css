@@ -1,0 +1,2146 @@
+/* ==========================================================================
+   MOTOKKA PRIME · sistema de design
+   Tokens e componentes derivados de "Style Guide Motokka Prime v2.0".
+   Ordem: tokens · base · tipografia · layout · componentes · seções · motion
+
+   Carga máxima: preto, branco e vermelho. O vermelho marca ação ou dado,
+   nunca decoração. Seções alternam escura (.s-escura) e clara (o padrão).
+   ========================================================================== */
+
+:root {
+  /* marca */
+  --mtk-vermelho:        #E30613;
+  --mtk-vermelho-texto:  #FF4D4D;  /* texto vermelho sobre preto */
+  --mtk-preto:           #0E0F0C;
+  --mtk-branco:          #FFFFFF;
+  --mtk-whats:           #25D366;  /* só o botão flutuante */
+
+  /* neutros */
+  --mtk-asfalto:         #1C1E1A;  /* cards e painéis em seção escura */
+  --mtk-concreto:        #2E312C;  /* bordas e divisórias em seção escura */
+  --mtk-nevoa:           #8A8F86;  /* texto de apoio sobre preto. Nunca sobre papel. */
+  --mtk-papel:           #F3F2EC;  /* fundo das seções claras */
+  --mtk-papel-2:         #ECECE8;  /* poço do produto, faixa alternada */
+  --mtk-linha:           #E6E7E2;  /* bordas em seção clara */
+  --mtk-linha-forte:     #C9CBC3;  /* borda de input; lead sobre preto */
+  --mtk-cinza-claro:     #A9ADA4;  /* corpo sobre preto */
+  --mtk-grafite:         #3A3D36;  /* corpo sobre papel */
+  --mtk-apoio:           #555850;  /* texto de apoio sobre papel */
+
+  /* sinal: sempre o par fundo + texto. O par escuro vive sobre preto; o
+     claro, em cards brancos e seções de papel. */
+  --mtk-ok-fundo:            #12301F;
+  --mtk-ok-texto:            #6FE8A0;
+  --mtk-alerta-fundo:        #33260A;
+  --mtk-alerta-texto:        #FFC24D;
+  --mtk-erro-fundo:          #3A1410;
+  --mtk-erro-texto:          #FF8A73;
+  --mtk-ok-fundo-claro:      #DDF5E6;
+  --mtk-ok-texto-claro:      #0B6B3A;
+  --mtk-alerta-fundo-claro:  #FBEBC8;
+  --mtk-alerta-texto-claro:  #7A4E00;
+  --mtk-erro-fundo-claro:    #FFFFFF;
+  --mtk-erro-texto-claro:    #B3261E;
+
+  /* tipografia: Archivo variável (largura 100–125%) e JetBrains Mono para
+     specs, parcelas e rótulos. */
+  --mtk-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --mtk-texto:   "Archivo", "Segoe UI", system-ui, sans-serif;
+  --mtk-mono:    "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* espaço · base 4 */
+  --mtk-4: 4px;   --mtk-8: 8px;   --mtk-12: 12px; --mtk-16: 16px;
+  --mtk-24: 24px; --mtk-32: 32px; --mtk-48: 48px; --mtk-64: 64px;
+  --mtk-96: 96px;
+
+  /* forma */
+  --mtk-r-tag: 4px;
+  --mtk-r-card: 6px;
+  --mtk-r-input: 8px;
+  --mtk-r-btn: 999px;
+  --mtk-sombra-1: 0 6px 20px rgba(14, 15, 12, .10);
+  --mtk-sombra-2: 0 18px 44px rgba(14, 15, 12, .22);
+
+  /* layout */
+  --mtk-container: 1240px;
+  --mtk-gutter: 24px;
+  --mtk-margem: 40px;
+  --mtk-secao: 96px;
+  --mtk-header: 80px;
+  --mtk-header-fundo: #141414;
+  --mtk-faixa: 52px;  /* altura do letreiro: entra na conta dos 100vh da capa */
+
+  /* movimento */
+  --mtk-rapido: 160ms ease-out;
+  --mtk-medio:  240ms cubic-bezier(.2, .8, .2, 1);
+}
+
+/* Breakpoint único do styleguide. */
+@media (max-width: 860px) {
+  :root {
+    --mtk-margem: 24px;
+    --mtk-secao: 64px;
+    --mtk-header: 68px;
+  }
+}
+
+/* ── base ──────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Vários componentes aqui declaram `display: grid/flex`, o que vence a regra
+   do user-agent para [hidden] e faz o atributo virar decoração. Sem isto, o
+   bloco de cores aparece vazio no modal. */
+[hidden] { display: none !important; }
+
+html {
+  scroll-behavior: smooth;
+  /* Compensa o header fixo nas âncoras. */
+  scroll-padding-top: calc(var(--mtk-header) + var(--mtk-24));
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--mtk-papel);
+  color: var(--mtk-preto);
+  font-family: var(--mtk-texto);
+  font-size: 17px;
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.is-locked { overflow: hidden; }
+
+img, svg, video { display: block; max-width: 100%; }
+img, video { height: auto; }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+
+/* Vermelho sobre papel só passa em título de 24 px ou mais: link de corpo é
+   grafite, e o vermelho entra no sublinhado. */
+a {
+  color: var(--mtk-preto);
+  text-decoration-color: var(--mtk-vermelho);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+a:hover { color: var(--mtk-vermelho); }
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--mtk-vermelho);
+  outline-offset: 3px;
+  border-radius: var(--mtk-4);
+}
+.s-escura :where(a, button, input, select, [tabindex]):focus-visible,
+.header :where(a, button):focus-visible,
+.capa :where(a, button):focus-visible,
+.menu :where(a, button):focus-visible { outline-color: var(--mtk-vermelho-texto); }
+
+.u-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.u-skip {
+  position: absolute;
+  left: var(--mtk-16);
+  top: -100px;
+  z-index: 200;
+  background: var(--mtk-branco);
+  color: var(--mtk-preto);
+  padding: var(--mtk-12) var(--mtk-24);
+  border-radius: var(--mtk-r-btn);
+  box-shadow: var(--mtk-sombra-2);
+  font-weight: 700;
+  transition: top var(--mtk-rapido);
+}
+.u-skip:focus { top: var(--mtk-16); }
+
+/* ── tipografia ────────────────────────────────────────────────────────── */
+
+.t-display {
+  font-family: var(--mtk-display);
+  font-weight: 900;
+  font-stretch: 125%;
+  font-size: clamp(44px, 6vw, 88px);
+  line-height: .9;
+  letter-spacing: -.03em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.t-h2 {
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-stretch: 115%;
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1;
+  letter-spacing: -.02em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  margin: 0;
+}
+
+.t-h3 {
+  font-family: var(--mtk-display);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.t-lead {
+  font-size: clamp(18px, 1.6vw, 20px);
+  line-height: 1.5;
+  color: var(--mtk-grafite);
+  margin: 0;
+  /* Medida de linha: 60–75 caracteres. */
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.t-body { margin: 0; color: var(--mtk-grafite); max-width: 68ch; text-wrap: pretty; }
+
+/* Rótulo em mono, como no painel do veículo. Sobre papel é grafite: vermelho
+   nesse corpo não passa no contraste. */
+.t-label {
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mtk-apoio);
+  margin: 0;
+}
+
+.t-caption { font-size: 13px; line-height: 1.5; color: var(--mtk-apoio); margin: 0; }
+
+.t-num { font-family: var(--mtk-mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Em fundo escuro os neutros invertem. O corpo nunca cai abaixo de 4.5:1. */
+.s-escura { background: var(--mtk-preto); color: var(--mtk-papel); }
+.s-escura .t-lead { color: var(--mtk-linha-forte); }
+.s-escura .t-body { color: var(--mtk-cinza-claro); }
+.s-escura .t-label { color: var(--mtk-vermelho-texto); }
+.s-escura .t-caption { color: var(--mtk-nevoa); }
+/* `:not(.btn)` é obrigatório: sem ele esta regra (0,1,1) vence os modificadores
+   de botão (0,1,0) e o texto do CTA herda a cor de link. */
+.s-escura a:not(.btn) { color: var(--mtk-papel); }
+.s-escura a:not(.btn):hover { color: var(--mtk-vermelho-texto); }
+
+/* Faixa clara alternada: separa blocos claros vizinhos sem trocar de tom. */
+.s-faixa { background: var(--mtk-papel-2); }
+
+/* ── layout ────────────────────────────────────────────────────────────── */
+
+.u-container {
+  width: 100%;
+  max-width: calc(var(--mtk-container) + var(--mtk-margem) * 2);
+  margin-inline: auto;
+  padding-inline: var(--mtk-margem);
+}
+
+.u-secao { padding-block: var(--mtk-secao); }
+.u-secao--curta { padding-block: calc(var(--mtk-secao) * .66); }
+
+.u-cabecalho {
+  display: grid;
+  gap: var(--mtk-16);
+  max-width: 760px;
+  margin-bottom: var(--mtk-48);
+}
+.u-cabecalho--centro { margin-inline: auto; text-align: center; }
+.u-cabecalho--centro .t-lead { margin-inline: auto; }
+
+/* ── botões ────────────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mtk-12);
+  min-height: 56px;
+  padding: 0 28px;
+  border: 1.5px solid transparent;
+  border-radius: var(--mtk-r-btn);
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--mtk-rapido), color var(--mtk-rapido),
+              border-color var(--mtk-rapido), box-shadow var(--mtk-rapido),
+              filter var(--mtk-rapido), transform var(--mtk-rapido);
+}
+.btn:active { transform: translateY(1px); }
+/* Em 390 px um rótulo longo em caixa alta não cabe numa linha só: sem isto o
+   botão alarga o bloco e a página ganha rolagem horizontal. */
+@media (max-width: 560px) {
+  .btn { padding: 12px 22px; font-size: 15px; white-space: normal; text-align: center; line-height: 1.15; }
+}
+.btn svg { width: 20px; height: 20px; flex: none; }
+
+/* Um por dobra. `.btn--whats` é o mesmo botão: o caminho da página é um só,
+   e o verde do WhatsApp fica reservado ao botão flutuante. */
+.btn--primario,
+.btn--whats {
+  background: var(--mtk-vermelho);
+  color: var(--mtk-branco);
+}
+.btn--primario:hover,
+.btn--whats:hover {
+  color: var(--mtk-branco);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* Ação principal em seção clara, quando o vermelho já foi gasto na dobra. */
+.btn--escuro {
+  background: var(--mtk-preto);
+  color: var(--mtk-papel);
+}
+.btn--escuro:hover {
+  background: var(--mtk-concreto);
+  color: var(--mtk-papel);
+  transform: translateY(-1px);
+}
+
+.btn--contorno {
+  background: transparent;
+  border-color: var(--mtk-preto);
+  color: var(--mtk-preto);
+}
+.btn--contorno:hover {
+  background: var(--mtk-preto);
+  color: var(--mtk-papel);
+}
+
+.btn--texto {
+  min-height: 0;
+  padding-inline: 0;
+  background: none;
+  color: var(--mtk-preto);
+}
+.btn--texto:hover { color: var(--mtk-vermelho); }
+
+/* A capa não usa .s-escura, mas o fundo é escuro
+   do mesmo jeito: o contorno precisa do mesmo tratamento. */
+.s-escura .btn--contorno,
+.capa .btn--contorno {
+  border-color: var(--mtk-papel);
+  color: var(--mtk-papel);
+}
+.s-escura .btn--contorno:hover,
+.capa .btn--contorno:hover {
+  background: var(--mtk-papel);
+  color: var(--mtk-preto);
+}
+
+/* O card é uma ilha CLARA dentro da seção escura. Sem este reset, o contorno
+   herda o tratamento de fundo escuro e vira branco sobre branco: o botão
+   "+ Detalhes" simplesmente some. */
+.s-escura .card .btn--contorno {
+  border-color: var(--mtk-linha-forte);
+  color: var(--mtk-preto);
+  background: transparent;
+}
+.s-escura .card .btn--contorno:hover {
+  border-color: var(--mtk-preto);
+  background: var(--mtk-preto);
+  color: var(--mtk-papel);
+}
+
+.btn[aria-disabled="true"],
+.btn:disabled {
+  background: var(--mtk-linha);
+  color: var(--mtk-apoio);
+  border-color: transparent;
+  pointer-events: none;
+}
+
+.u-acoes { display: flex; flex-wrap: wrap; gap: var(--mtk-12); }
+
+/* ── etiquetas ─────────────────────────────────────────────────────────── */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--mtk-r-tag);
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* Verde = liberdade legal · Âmbar = obrigação · Neutra = técnica · Preta = comercial.
+   Etiqueta legal só aparece com enquadramento confirmado por escrito. */
+.tag--livre   { background: var(--mtk-ok-fundo-claro);     color: var(--mtk-ok-texto-claro); }
+.tag--exige   { background: var(--mtk-alerta-fundo-claro); color: var(--mtk-alerta-texto-claro); }
+.tag--tecnica { background: var(--mtk-linha);              color: var(--mtk-concreto); }
+.tag--novo    { background: var(--mtk-preto);              color: var(--mtk-branco); }
+.tag--livre::before,
+.tag--exige::before { content: "●"; font-size: 8px; }
+
+.u-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ── header ────────────────────────────────────────────────────────────── */
+
+.header {
+  position: sticky;
+  top: 0;
+  /* Acima do menu (90): senão a cortina cobre o próprio botão de fechar e o
+     usuário fica preso no overlay. Abaixo do modal (100). */
+  z-index: 95;
+  /* Chapado, sem vidro: translúcido, o header pegava o tom do vídeo da capa
+     e lia como cinza. */
+  background: var(--mtk-header-fundo);
+  color: var(--mtk-papel);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--mtk-medio), box-shadow var(--mtk-medio),
+              background var(--mtk-medio);
+}
+.header.is-fixo {
+  border-bottom-color: var(--mtk-concreto);
+}
+
+.header__barra {
+  height: var(--mtk-header);
+  display: flex;
+  align-items: center;
+  gap: var(--mtk-24);
+}
+
+/* Área de respiro do logo: X = altura do símbolo ÷ 2, aqui o padding da barra. */
+.header__logo { display: flex; align-items: center; flex: none; }
+/* Lockup horizontal: monograma + wordmark. Em 44 px o wordmark ainda lê. */
+.header__logo img { height: 44px; width: auto; }
+@media (max-width: 860px) { .header__logo img { height: 36px; } }
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--mtk-24);
+  margin-inline: auto;
+}
+.header__link {
+  position: relative;
+  padding: 6px 0;
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mtk-linha-forte);
+  text-decoration: none;
+  transition: color var(--mtk-rapido);
+}
+.header__link::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 2px;
+  background: var(--mtk-vermelho);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--mtk-medio);
+}
+.header__link:hover { color: var(--mtk-branco); }
+.header__link:hover::after,
+.header__link[aria-current="true"]::after { transform: scaleX(1); }
+
+.header__acoes { display: flex; align-items: center; gap: var(--mtk-12); flex: none; }
+/* No header o botão é mais baixo que os 56 px da página: a barra tem 80. */
+.header__acoes .btn { min-height: 44px; padding: 0 20px; font-size: 14px; }
+
+.header__toggle {
+  display: none;
+  align-items: center;
+  gap: var(--mtk-8);
+  padding: 10px 16px 10px 12px;
+  background: transparent;
+  color: var(--mtk-papel);
+  border: 1.5px solid var(--mtk-concreto);
+  border-radius: var(--mtk-r-btn);
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.header__toggle-icone { position: relative; width: 18px; height: 12px; flex: none; }
+.header__toggle-icone span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform var(--mtk-medio), opacity var(--mtk-rapido);
+}
+.header__toggle-icone span:nth-child(1) { top: 0; }
+.header__toggle-icone span:nth-child(2) { top: 5px; }
+.header__toggle-icone span:nth-child(3) { top: 10px; }
+.header__toggle[aria-expanded="true"] .header__toggle-icone span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+.header__toggle[aria-expanded="true"] .header__toggle-icone span:nth-child(2) { opacity: 0; }
+.header__toggle[aria-expanded="true"] .header__toggle-icone span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+
+/* Rótulo Menu/Fechar rolando dentro de uma janelinha. */
+/* A janelinha tem a altura de UMA linha; sem line-height explícito o texto
+   fica mais alto que a janela e aparece cortado ao meio. */
+.header__toggle-rotulo { display: block; height: 14px; overflow: hidden; }
+.header__toggle-rotulo span { display: block; height: 14px; line-height: 14px; transition: transform var(--mtk-medio); }
+.header__toggle[aria-expanded="true"] .header__toggle-rotulo span { transform: translateY(-14px); }
+
+@media (max-width: 1080px) {
+  .header__nav { display: none; }
+  .header__toggle { display: inline-flex; }
+  .header__acoes .btn--desktop { display: none; }
+  /* Sem o nav no meio, os dois itens restantes encostariam no logo.
+     O auto joga as ações para a borda, onde o polegar alcança. */
+  .header__acoes { margin-left: auto; }
+}
+
+/* Com o menu aberto o header passa a flutuar sobre o painel escuro: o fundo
+   sai e a marca inverte, para o botão de fechar continuar legível. */
+/* O header fica ACIMA da gaveta, então precisa de fundo próprio: transparente,
+   ele herdaria o que estiver atrás (que pode ser uma seção branca) e a marca
+   invertida sumiria. */
+body.menu-aberto .header {
+  border-bottom-color: transparent;
+  box-shadow: none;
+}
+body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
+
+/* ── menu mobile (cortina + máscara, adaptado de NAV-001) ──────────────── */
+
+/* Gaveta ancorada à DIREITA: o painel e as cortinas ocupam só uma faixa, e o
+   resto da tela vira scrim. Ocupando 100% da largura, o overlay perdia a
+   direção de onde veio e virava "outra página". */
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  visibility: hidden;
+  background: rgba(14, 15, 12, 0);
+  transition: background 300ms ease, visibility 0s linear 420ms;
+}
+.menu.is-aberto {
+  pointer-events: auto;
+  visibility: visible;
+  background: rgba(14, 15, 12, .55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.menu__largura,
+.menu__cortina,
+.menu__painel { width: min(420px, 86%); }
+
+/* Entrada e saída são coreografias DIFERENTES, de propósito: entrando, a
+   cortina varre primeiro e o painel chega logo atrás; saindo, o painel some
+   primeiro e a cortina o segue. Fazer a saída ser o inverso da entrada deixa
+   a tela parada quase meio segundo depois do clique: e lê como travamento. */
+.menu { transition: visibility 0s linear 420ms; }
+.menu.is-aberto { transition-delay: 0s; }
+
+.menu__cortina {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  transform: translateX(100%);
+  will-change: transform;
+  transition: transform 320ms cubic-bezier(.4, 0, .2, 1);
+}
+.menu__cortina--1 { background: var(--mtk-concreto); transition-delay: 120ms; }
+.menu__cortina--2 { background: var(--mtk-vermelho); transition-delay: 70ms; }
+
+.menu.is-aberto .menu__cortina { transition-duration: 460ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
+.menu.is-aberto .menu__cortina--1 { transform: none; transition-delay: 0ms; }
+.menu.is-aberto .menu__cortina--2 { transform: none; transition-delay: 55ms; }
+
+.menu__painel {
+  position: absolute;
+  top: 0; right: 0;
+  height: 100%;
+  background: var(--mtk-preto);
+  color: var(--mtk-branco);
+  padding: calc(var(--mtk-header) + var(--mtk-32)) var(--mtk-32) var(--mtk-32);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mtk-24);
+  overflow-y: auto;
+  transform: translateX(100%);
+  will-change: transform;
+  transition: transform 300ms cubic-bezier(.4, 0, .2, 1);
+}
+.menu.is-aberto .menu__painel {
+  transform: none;
+  transition: transform 460ms cubic-bezier(.2, .8, .2, 1) 100ms;
+}
+
+.menu__lista { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--mtk-4); }
+/* A máscara é o efeito: o rótulo emerge de dentro do wrap, não aparece por cima.
+   Tire o overflow:hidden e o efeito morre: o item passa a deslizar por cima
+   do layout, que é outra coisa (e pior). */
+.menu__item-wrap { overflow: hidden; padding-block: 2px; }
+.menu__item {
+  display: block;
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-stretch: 115%;
+  font-size: clamp(28px, 7.4vw, 38px);
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  text-transform: uppercase;
+  color: var(--mtk-papel);
+  text-decoration: none;
+  transform: translateY(140%);
+  transition: color var(--mtk-rapido), transform 200ms ease-in;
+}
+/* Os itens não esperam o painel assentar: começam junto com ele. É essa
+   sobreposição que faz o menu ler como uma coisa só chegando. */
+.menu.is-aberto .menu__item {
+  transform: none;
+  transition: color var(--mtk-rapido),
+              transform 520ms cubic-bezier(.2, .8, .2, 1) calc(170ms + var(--i, 0) * 55ms);
+}
+.menu__item:hover { color: var(--mtk-vermelho-texto); }
+.menu__numero {
+  font-family: var(--mtk-mono);
+  font-stretch: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--mtk-vermelho-texto);
+  vertical-align: super;
+  margin-right: var(--mtk-8);
+}
+
+.menu__rodape { margin-top: auto; display: grid; gap: var(--mtk-16); }
+.menu__contato { display: grid; gap: 4px; font-size: 15px; color: var(--mtk-cinza-claro); }
+.menu__contato strong { color: var(--mtk-papel); font-family: var(--mtk-mono); font-weight: 600; }
+
+/* ── vitrine ───────────────────────────────────────────────────────────── */
+
+/* Sem `overflow: hidden` aqui: ele transformaria esta seção no contêiner de
+   rolagem do filtro e mataria o `position: sticky` dos pills. A textura já é
+   absolute com inset: 0, então não vaza sozinha. */
+.vitrine { position: relative; }
+/* Pattern do monograma como textura: opacidade baixa, nunca compete com o card. */
+.vitrine__textura {
+  position: absolute;
+  inset: 0;
+  background-image: url("../img/brand/pattern-monograma.webp");
+  background-size: 460px;
+  opacity: .035;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.vitrine > .u-container { position: relative; }
+
+.filtro-sentinela { height: 1px; margin-bottom: -1px; }
+
+/* Gruda logo abaixo do header. Enquanto solto, é só uma fileira de pills;
+   ao grudar vira barra de vidro, para o filtro continuar ao alcance sem o
+   visitante ter que subir a página inteira. */
+.filtro {
+  position: sticky;
+  top: calc(var(--mtk-header) + var(--mtk-8));
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mtk-8);
+  margin-bottom: var(--mtk-24);
+  padding: 0;
+  border: 1px solid transparent; /* reservado: senão a borda empurra ao grudar */
+  border-radius: var(--mtk-r-btn);
+  transition: padding var(--mtk-medio), background var(--mtk-medio),
+              border-color var(--mtk-medio), box-shadow var(--mtk-medio);
+}
+
+.filtro.is-fixo {
+  padding: 7px 10px;
+  background: rgba(28, 30, 26, .8);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border-color: var(--mtk-concreto);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+}
+.filtro.is-fixo .filtro__btn { padding: 7px 12px; font-size: 11.5px; gap: 6px; }
+.filtro.is-fixo .filtro__contagem { font-size: 10px; padding: 2px 6px; }
+.filtro__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border: 1px solid var(--mtk-concreto);
+  border-radius: var(--mtk-r-btn);
+  background: transparent;
+  color: var(--mtk-linha-forte);
+  font-family: var(--mtk-texto);
+  font-weight: 700;
+  font-size: 13.5px;
+  transition: background var(--mtk-rapido), border-color var(--mtk-rapido), color var(--mtk-rapido);
+}
+.filtro__btn:hover { border-color: var(--mtk-papel); color: var(--mtk-papel); }
+/* No celular os pills quebram em três linhas se forem largos demais. */
+@media (max-width: 560px) {
+  .filtro { gap: 6px; }
+  .filtro__btn { padding: 8px 12px; font-size: 12px; gap: 6px; }
+  .filtro__contagem { font-size: 10px; padding: 2px 6px; }
+}
+
+/* Grudado no celular, a barra rola na horizontal em vez de quebrar em três
+   linhas: uma barra de vidro com 60% da altura da tela não é atalho, é
+   obstáculo. */
+@media (max-width: 700px) {
+  .filtro.is-fixo {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .filtro.is-fixo::-webkit-scrollbar { display: none; }
+  .filtro.is-fixo .filtro__btn { flex: 0 0 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filtro { transition: none; }
+}
+.filtro__btn[aria-pressed="true"] {
+  background: var(--mtk-vermelho);
+  border-color: var(--mtk-vermelho);
+  color: var(--mtk-branco);
+}
+.filtro__contagem {
+  font-family: var(--mtk-mono);
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: var(--mtk-r-btn);
+  background: rgba(255, 255, 255, .14);
+  font-variant-numeric: tabular-nums;
+}
+.filtro__btn[aria-pressed="true"] .filtro__contagem { background: rgba(14, 15, 12, .28); color: var(--mtk-branco); }
+
+.filtro__nota {
+  min-height: 48px;
+  max-width: 68ch;
+  margin-bottom: var(--mtk-32);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--mtk-cinza-claro);
+}
+
+/* `auto-fit` em vez de `auto-fill`: no container de 1240 px a conta fecha em
+   4 colunas assim que houver 4+ modelos (o styleguide pede 4 no desktop), e
+   enquanto o catálogo estiver curto os cards ocupam a linha em vez de deixar
+   uma coluna fantasma. */
+.vitrine__grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
+  justify-items: center;
+  gap: var(--mtk-24);
+}
+
+/* Teto de largura do CARD, nao da coluna.
+   O auto-fit conta as colunas pela funcao MAXIMA da minmax quando ela e
+   definida: pondo o teto na coluna (minmax(272px, 608px)) o navegador passa a
+   caber so 2 colunas em 1240px e "Todos" perde as 4 colunas. Limitando o card
+   e centralizando, a contagem de colunas segue com 1fr e o card de uma
+   categoria com um modelo so para de esticar para os 1240px do container.
+   608px e exatamente a largura que ele tem quando a categoria traz dois. */
+.vitrine__grade > * {
+  width: 100%;
+  max-width: 608px;
+}
+
+/* ── card de modelo ────────────────────────────────────────────────────── */
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--mtk-branco);
+  border: 1px solid var(--mtk-linha);
+  border-radius: var(--mtk-r-card);
+  overflow: hidden;
+  color: var(--mtk-preto);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+  transition: box-shadow var(--mtk-rapido), border-color var(--mtk-rapido), transform var(--mtk-rapido);
+  /* variáveis alimentadas pelo rastreio de cursor (EFFECT-001) */
+  --brilho: 0;
+  --angulo: 180deg;
+}
+.card:hover {
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .4);
+  transform: translateY(-2px);
+}
+.card[hidden] { display: none; }
+
+/* Facho de luz na borda: acende no setor onde o cursor está.
+   Nada anima: só duas variáveis mudam de valor. */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--angulo) at 50% 50%,
+    var(--mtk-vermelho-texto) 0deg, var(--mtk-vermelho) 40deg,
+    transparent 92deg, transparent 268deg,
+    var(--mtk-vermelho) 320deg, var(--mtk-vermelho-texto) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: var(--brilho);
+  transition: opacity var(--mtk-medio);
+  pointer-events: none;
+}
+
+.card__foto {
+  position: relative;
+  /* 5:4 em vez de 4:3: os recortes são largos, e num poço mais baixo o produto
+     encolhia para caber na horizontal, sobrando faixa vazia em cima e embaixo. */
+  aspect-ratio: 5 / 4;
+  background: radial-gradient(ellipse at 50% 40%, var(--mtk-branco) 0%, var(--mtk-papel-2) 75%);
+  overflow: hidden;
+
+  /* É um <button>, para a foto abrir os detalhes no clique e o teclado
+     alcançar. Botão traz borda, fundo, fonte e display próprios do navegador:
+     sem este reset ele ganharia moldura cinza e pararia de ocupar a linha. */
+  display: block;
+  width: 100%;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+.card__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 420ms cubic-bezier(.2, .8, .2, 1);
+}
+.card:hover .card__foto img { transform: scale(1.035); }
+
+/* PNG sem fundo: a moto flutua no poço claro com sombra de contato, que é o
+   que o styleguide pede. Modelos ainda em foto de estúdio continuam sangrando
+   o poço, e os dois convivem na mesma grade sem parecer erro. */
+.card__foto--recorte {
+  background: radial-gradient(ellipse at 50% 40%, var(--mtk-branco) 0%, var(--mtk-papel-2) 75%);
+}
+.card__foto--recorte img {
+  object-fit: contain;
+  /* Respiro curto de propósito: o recorte já sai do extrator com 4% de margem,
+     então padding grande aqui vira margem dobrada e encolhe o produto. */
+  padding: 3% 4% 4%;
+  filter: drop-shadow(0 12px 10px rgba(14, 15, 12, .22));
+}
+.card:hover .card__foto--recorte img { transform: scale(1.05); }
+
+.card__tags { position: absolute; left: 14px; top: 14px; pointer-events: none; }
+.card__corpo {
+  display: grid;
+  gap: var(--mtk-16);
+  align-content: space-between;
+  padding: var(--mtk-24);
+}
+.card__categoria {
+  margin: 0 0 6px;
+  font-family: var(--mtk-mono);
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--mtk-apoio);
+}
+.card__nome { font-family: var(--mtk-display); font-weight: 800; font-stretch: 115%; font-size: 26px; line-height: 1.05; letter-spacing: -.01em; text-transform: uppercase; margin: 0; }
+
+/* Specs em mono, como no painel. Duas colunas quando o fabricante só
+   confirmou dois dos três números. O 1 px de fundo vira a linha da grade. */
+.card__numeros {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--mtk-linha);
+  border: 1px solid var(--mtk-linha);
+  border-radius: var(--mtk-r-tag);
+  overflow: hidden;
+}
+.card__numeros[data-colunas="2"] { grid-template-columns: repeat(2, 1fr); }
+.card__numeros[data-colunas="1"] { grid-template-columns: 1fr; }
+.card__numero { display: grid; gap: 2px; padding: 10px; background: var(--mtk-branco); }
+.card__numero b {
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.2;
+  color: var(--mtk-vermelho);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.card__numero b span { margin-left: 3px; }
+.card__numero small { font-size: 11px; line-height: 1.3; color: var(--mtk-apoio); }
+
+/* Estado enquanto a ficha do fabricante não estiver confirmada por escrito. */
+.card__pendente {
+  padding: 14px;
+  border: 1px dashed var(--mtk-linha-forte);
+  border-radius: var(--mtk-r-tag);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--mtk-apoio);
+}
+.card__pendente strong { display: block; color: var(--mtk-preto); font-family: var(--mtk-mono); font-weight: 600; font-size: 12px; }
+
+.card__acoes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--mtk-8); }
+.card__acoes .btn { min-height: 44px; padding-inline: var(--mtk-12); font-size: 14px; }
+@media (max-width: 380px) {
+  .card__acoes { grid-template-columns: 1fr; }
+}
+
+.vitrine__vazio {
+  padding: var(--mtk-48);
+  text-align: center;
+  border: 1px dashed var(--mtk-concreto);
+  border-radius: var(--mtk-r-card);
+  color: var(--mtk-cinza-claro);
+}
+
+/* ── modal de detalhes ─────────────────────────────────────────────────── */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: var(--mtk-24);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--mtk-medio), visibility var(--mtk-medio);
+}
+.modal.is-aberto { visibility: visible; opacity: 1; }
+
+.modal__scrim { position: absolute; inset: 0; background: rgba(14, 15, 12, .72); backdrop-filter: blur(3px); }
+
+/* Altura DEFINIDA, e nao so `max-height`. Com teto apenas, o Safari (Mac e
+   iPad deitado) nao limitava a linha do grid: o painel crescia alem da caixa,
+   o `overflow` cortava, e o botao do WhatsApp e as cores sumiam. O Chrome
+   respeitava o teto, por isso passou despercebido. */
+.modal__caixa {
+  position: relative;
+  width: min(1080px, 100%);
+  height: min(90vh, 820px);
+  display: grid;
+  grid-template-columns: 1.15fr .85fr;
+  grid-template-rows: minmax(0, 1fr);
+  background: var(--mtk-branco);
+  border-radius: var(--mtk-r-card);
+  overflow: hidden;
+  box-shadow: var(--mtk-sombra-2);
+  transform: translateY(14px) scale(.985);
+  transition: transform var(--mtk-medio);
+}
+.modal.is-aberto .modal__caixa { transform: none; }
+
+.modal__galeria { background: radial-gradient(ellipse at 50% 40%, var(--mtk-branco) 0%, var(--mtk-papel-2) 75%); display: grid; grid-template-rows: 1fr auto; min-height: 0; }
+
+/* Trilho do slider. O snap é do CSS; o JS só cuida do arrasto com mouse e de
+   manter a miniatura ativa em sincronia. Em touch, desliza nativo. */
+.modal__slider {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  min-height: 0;
+}
+.modal__slider::-webkit-scrollbar { display: none; }
+.modal__slider.is-arrastando { cursor: grabbing; scroll-snap-type: none; }
+.modal__slider:focus-visible { outline-offset: -3px; }
+
+.modal__slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  display: grid;
+  /* Trilha presa a altura do slide. Na trilha `auto` do padrao, o
+     `height: 100%` da foto se resolvia contra o proprio conteudo: a foto
+     crescia na proporcao natural, passava do quadro e o `overflow` cortava
+     as rodas (medido no celular: foto de 314 px num quadro de 277). */
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+.modal__slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Enquanto arrasta, a imagem não pode virar drag-and-drop do browser. */
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.modal__slide img.is-recorte {
+  object-fit: contain;
+  padding: 2.5%;
+  filter: drop-shadow(0 16px 14px rgba(14, 15, 12, .22));
+}
+
+/* Terceiro enquadramento. `recorte` decidia duas coisas de uma vez, e faltava
+   um caso: a foto de ESTUDIO sobre fundo liso, que precisa caber inteira mas
+   nao e recorte com alfa e por isso nao leva sombra.
+
+   Sem isto ela caia no `cover` do padrao e era cortada: medido em 37% da area
+   do arquivo na foto vermelha do X11, o suficiente para decepar a roda
+   dianteira. `cover` continua certo para close de detalhe e foto de rua, onde
+   preencher o quadro e o desejado. */
+/* Condicao de uma alegacao da ficha. Menor e mais apagada que o valor: ela
+   qualifica, nao compete. */
+.ficha__nota {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: .01em;
+  color: var(--mtk-nevoa);
+}
+
+.modal__slide img.is-inteira {
+  object-fit: contain;
+  /* Branco, e nao a Nevoa do poco: a foto do fabricante ja vem sobre branco,
+     entao a area vazia do `contain` precisa casar com o fundo DELA, senao
+     aparece um retangulo mais claro dentro da moldura. */
+  background: #FFFFFF;
+}
+.modal__miniaturas {
+  display: flex;
+  gap: var(--mtk-8);
+  padding: var(--mtk-12);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.modal__miniaturas[hidden] { display: none; }
+.modal__mini {
+  flex: none;
+  width: 74px;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--mtk-r-card);
+  overflow: hidden;
+  background: var(--mtk-branco);
+  transition: border-color var(--mtk-rapido);
+}
+.modal__mini img { width: 100%; height: 100%; object-fit: cover; }
+.modal__mini[aria-current="true"] { border-color: var(--mtk-vermelho); }
+
+/* Três faixas: cabeçalho parado, miolo rolando, base parada. A base carrega
+   cor e contato, que são a conversão. */
+.modal__painel {
+  background: var(--mtk-preto);
+  color: var(--mtk-papel);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modal__topo {
+  display: grid;
+  gap: var(--mtk-12);
+  padding: var(--mtk-32) var(--mtk-32) var(--mtk-16);
+}
+
+.modal__corpo {
+  display: grid;
+  gap: var(--mtk-16);
+  align-content: start;
+  padding: 0 var(--mtk-32) var(--mtk-24);
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mtk-concreto) transparent;
+}
+
+.modal__base {
+  display: grid;
+  gap: var(--mtk-12);
+  padding: var(--mtk-16) var(--mtk-32) var(--mtk-24);
+  border-top: 1px solid var(--mtk-concreto);
+  /* Um respiro escuro atrás da base para o miolo parecer passar por baixo. */
+  background: linear-gradient(to top, var(--mtk-preto) 78%, rgba(14, 15, 12, .82));
+}
+.modal__eyebrow {
+  margin: 0;
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mtk-vermelho-texto);
+}
+/* Etiqueta ao lado do nome, na linha de base: empilhada, ela roubava uma
+   faixa inteira do painel e empurrava a ficha para baixo. */
+.modal__nome {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--mtk-12);
+}
+.modal__titulo { font-family: var(--mtk-display); font-weight: 800; font-stretch: 115%; font-size: 34px; line-height: 1; letter-spacing: -.02em; text-transform: uppercase; margin: 0; }
+/* Sobre o painel preto a etiqueta legal usa o par escuro. */
+.modal__painel .tag--livre { background: var(--mtk-ok-fundo); color: var(--mtk-ok-texto); }
+.modal__painel .tag--exige { background: var(--mtk-alerta-fundo); color: var(--mtk-alerta-texto); }
+.modal__nome .tag { font-size: 10px; padding: 5px 8px; letter-spacing: .06em; }
+.modal__chamada { margin: 0; font-size: 15px; line-height: 1.6; color: var(--mtk-linha-forte); }
+
+.modal__ficha { display: grid; gap: 0; margin: 0; font-size: 14px; }
+.modal__ficha div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--mtk-16);
+  padding-block: 11px;
+  border-bottom: 1px solid var(--mtk-concreto);
+}
+.modal__ficha dt { color: var(--mtk-cinza-claro); }
+.modal__ficha dd { margin: 0; text-align: right; font-family: var(--mtk-mono); font-weight: 600; font-size: 13px; }
+.modal__equipamentos { display: grid; gap: var(--mtk-8); }
+.modal__equipamentos-rotulo {
+  margin: 0;
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mtk-vermelho-texto);
+}
+.modal__equipamentos ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.modal__equipamentos li {
+  padding: 5px 10px;
+  border: 1px solid var(--mtk-concreto);
+  border-radius: var(--mtk-r-tag);
+  font-size: 12.5px;
+  color: var(--mtk-linha-forte);
+}
+
+.modal__cores { display: flex; align-items: center; gap: var(--mtk-16); flex-wrap: wrap; }
+/* O nome da cor ativa fica no rótulo, não em cada bolinha: o swatch sozinho
+   não é acessível, mas repetir quatro nomes polui a base do modal. */
+.modal__cores-rotulo {
+  margin: 0;
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mtk-nevoa);
+}
+.modal__cores-rotulo strong { color: var(--mtk-papel); font-weight: 600; }
+
+.modal__swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-left: auto; }
+.modal__swatches[hidden] { display: none; }
+.modal__swatch {
+  width: 30px; height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  display: grid;
+  place-items: center;
+  transition: transform var(--mtk-rapido);
+}
+.modal__swatch i {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  /* Cor de arte (bandeira, grafismo) entra como imagem de fundo. `cover` e
+     `overflow: hidden` garantem que ela preencha o circulo sem achatar e sem
+     vazar pelos cantos. */
+  overflow: hidden;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35);
+  transition: box-shadow var(--mtk-rapido), transform var(--mtk-rapido);
+}
+.modal__swatch:hover i { transform: scale(1.1); }
+/* Anel de 2 px na cor ativa, destacado da bolinha. Papel, e não vermelho: um
+   anel vermelho some em volta de um swatch vermelho. */
+.modal__swatch[aria-pressed="true"] i {
+  box-shadow: 0 0 0 2px var(--mtk-preto), 0 0 0 4px var(--mtk-papel), inset 0 0 0 1px rgba(255, 255, 255, .35);
+}
+
+/* Navegação entre modelos sem fechar a janela.
+   Fica no canto superior, em par com o botão de fechar, e NÃO por cima da
+   foto: sobreposta ao slider, ela brigaria com o arrastar da galeria, que já
+   ocupa a lateral da imagem. */
+.modal__navegacao {
+  position: absolute;
+  left: var(--mtk-12);
+  top: var(--mtk-12);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--mtk-8);
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(14, 15, 12, .7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.modal__passo {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: rgba(255, 255, 255, .85);
+  cursor: pointer;
+  transition: background var(--mtk-rapido), color var(--mtk-rapido);
+}
+.modal__passo:hover { background: rgba(255, 255, 255, .16); color: var(--mtk-branco); }
+.modal__passo svg { width: 17px; height: 17px; }
+
+.modal__posicao {
+  min-width: 5ch;
+  text-align: center;
+  font-family: var(--mtk-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: rgba(255, 255, 255, .7);
+}
+
+@media (max-width: 760px) {
+  .modal__navegacao { left: var(--mtk-8); top: var(--mtk-8); }
+  .modal__passo { width: 30px; height: 30px; }
+}
+
+.modal__fechar {
+  position: absolute;
+  right: var(--mtk-12); top: var(--mtk-12);
+  z-index: 2;
+  width: 40px; height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(14, 15, 12, .8);
+  color: var(--mtk-branco);
+  font-size: 18px;
+  line-height: 1;
+  transition: background var(--mtk-rapido);
+}
+.modal__fechar:hover { background: var(--mtk-vermelho); }
+
+@media (max-width: 900px) {
+  .modal { padding: 0; align-items: stretch; }
+  .modal__caixa {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 0;
+  }
+  /* Altura pela proporcao das fotos (4:3), e nao por uma fatia fixa da tela:
+     75vw e 4:3 da largura, que no celular e a largura do modal. O teto de 44%
+     da tela vale para a area inteira e so age em tela baixa: com miniaturas,
+     desconta a fileira delas (60 px).
+
+     Altura EXPLICITA, e nao `aspect-ratio`: o Safari nao usa o aspect-ratio
+     do slider para dimensionar a trilha `1fr` da galeria, e a foto sumia no
+     iPhone e no iPad (area com 0 px). O Chrome aceitava, por isso passou.
+     `vh` antes de `dvh`: iOS anterior ao 15.4 ignora a linha com dvh. */
+  .modal__galeria { height: auto; }
+  .modal__slider { height: min(75vw, 44vh); height: min(75vw, 44dvh); }
+  .modal__galeria.tem-miniaturas .modal__slider {
+    height: min(75vw, calc(44vh - 60px));
+    height: min(75vw, calc(44dvh - 60px));
+  }
+  .modal__miniaturas { padding: var(--mtk-8) var(--mtk-12); }
+  .modal__mini { width: 58px; }
+  .modal__titulo { font-size: 28px; }
+  .modal__topo { padding: var(--mtk-24) var(--mtk-24) var(--mtk-12); }
+  .modal__corpo { padding: 0 var(--mtk-24) var(--mtk-16); }
+  .modal__base { padding: var(--mtk-12) var(--mtk-24) var(--mtk-24); }
+  .modal__cores { gap: var(--mtk-12); }
+}
+
+/* ── formulário ────────────────────────────────────────────────────────── */
+
+.form { display: grid; gap: var(--mtk-16); }
+.form__campo { display: grid; gap: 6px; }
+.form__rotulo { font-weight: 700; font-size: 14px; color: var(--mtk-preto); }
+.form input,
+.form select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 var(--mtk-16);
+  border: 1.5px solid var(--mtk-linha-forte);
+  border-radius: var(--mtk-r-input);
+  background: var(--mtk-branco);
+  color: var(--mtk-preto);
+  font: inherit;
+  font-size: 16px;
+  transition: border-color var(--mtk-rapido), box-shadow var(--mtk-rapido);
+}
+.form input:focus,
+.form select:focus {
+  border-color: var(--mtk-preto);
+  box-shadow: 0 0 0 3px rgba(14, 15, 12, .14);
+  outline: none;
+}
+.form input[aria-invalid="true"],
+.form select[aria-invalid="true"] { border-color: var(--mtk-erro-texto-claro); background: var(--mtk-erro-fundo-claro); }
+
+.form__erro { margin: 0; font-size: 13px; font-weight: 600; color: var(--mtk-erro-texto-claro); min-height: 0; }
+.form__erro:empty { display: none; }
+
+.form__sucesso {
+  display: grid;
+  gap: var(--mtk-16);
+  padding: var(--mtk-32);
+  border-radius: var(--mtk-r-card);
+  background: var(--mtk-ok-fundo-claro);
+  border: 1px solid rgba(11, 107, 58, .3);
+  text-align: center;
+}
+.form__sucesso h3 { color: var(--mtk-ok-texto-claro); }
+
+.testride {
+  display: grid;
+  grid-template-columns: .9fr 1.1fr;
+  gap: clamp(var(--mtk-24), 4vw, 56px);
+  align-items: start;
+  padding: clamp(var(--mtk-24), 4vw, 48px);
+  background: var(--mtk-branco);
+  border: 1px solid var(--mtk-linha);
+  border-radius: var(--mtk-r-card);
+}
+@media (max-width: 900px) { .testride { grid-template-columns: 1fr; } }
+
+/* ── depoimentos ───────────────────────────────────────────────────────── */
+
+.depoimentos__grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--mtk-24); }
+.depoimento {
+  display: grid;
+  gap: var(--mtk-16);
+  align-content: start;
+  padding: var(--mtk-32);
+  background: var(--mtk-branco);
+  border: 1px solid var(--mtk-linha);
+  border-radius: var(--mtk-r-card);
+  transition: box-shadow var(--mtk-rapido), border-color var(--mtk-rapido);
+}
+.depoimento:hover { box-shadow: var(--mtk-sombra-1); border-color: var(--mtk-linha-forte); }
+.depoimento__estrelas { color: var(--mtk-vermelho); letter-spacing: .18em; font-size: 15px; }
+.depoimento__texto { margin: 0; font-weight: 700; font-size: 20px; line-height: 1.35; text-wrap: pretty; }
+.depoimento__autor { display: flex; align-items: center; gap: var(--mtk-12); }
+.depoimento__inicial {
+  width: 42px; height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--mtk-linha-forte);
+  color: var(--mtk-preto);
+  font-family: var(--mtk-display);
+  font-weight: 700;
+  font-size: 15px;
+  flex: none;
+}
+.depoimento__meta { display: grid; gap: 1px; }
+.depoimento__nome { font-family: var(--mtk-display); font-weight: 700; font-size: 15px; }
+.depoimento__modelo { font-family: var(--mtk-mono); font-size: 12px; color: var(--mtk-apoio); }
+
+/* ── FAQ ───────────────────────────────────────────────────────────────── */
+
+.faq { display: grid; gap: 0; max-width: 900px; margin-inline: auto; }
+.faq__item { border-bottom: 1px solid var(--mtk-linha-forte); }
+.faq__item:first-child { border-top: 1px solid var(--mtk-linha-forte); }
+
+.faq__botao {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 24px;
+  gap: var(--mtk-16);
+  align-items: center;
+  padding: var(--mtk-24) 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-family: var(--mtk-display);
+  font-weight: 700;
+  font-size: clamp(17px, 1.6vw, 19px);
+  line-height: 1.35;
+  color: var(--mtk-preto);
+  transition: color var(--mtk-rapido);
+}
+.faq__botao:hover { color: var(--mtk-grafite); }
+/* Sem seta girando: o sinal + / − basta e não desestabiliza a linha de base. */
+.faq__sinal { font-family: var(--mtk-mono); font-size: 22px; font-weight: 400; color: var(--mtk-vermelho); text-align: center; }
+
+.faq__resposta {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--mtk-medio);
+}
+.faq__item.is-aberto .faq__resposta { grid-template-rows: 1fr; }
+.faq__resposta > div { overflow: hidden; }
+.faq__resposta p { margin: 0 0 var(--mtk-24); max-width: 72ch; color: var(--mtk-grafite); }
+
+/* ── rodapé ────────────────────────────────────────────────────────────── */
+
+.rodape { padding-top: var(--mtk-secao); }
+.rodape__grade {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: var(--mtk-32);
+  padding-bottom: var(--mtk-48);
+}
+@media (max-width: 900px) { .rodape__grade { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .rodape__grade { grid-template-columns: 1fr; } }
+
+.checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--mtk-12); }
+.checklist li { display: grid; grid-template-columns: 22px 1fr; gap: var(--mtk-12); line-height: 1.5; color: var(--mtk-grafite); }
+.checklist svg { width: 22px; height: 22px; color: var(--mtk-ok-texto-claro); margin-top: 1px; }
+
+.rodape__logo img { height: 96px; width: auto; margin-bottom: var(--mtk-16); }
+.rodape__titulo {
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mtk-vermelho-texto);
+  margin: 0 0 var(--mtk-16);
+}
+.rodape__lista { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--mtk-8); font-size: 15px; }
+.rodape__lista a,
+.s-escura .rodape__lista a:not(.btn) { color: var(--mtk-linha-forte); text-decoration: none; }
+.s-escura .rodape__lista a:not(.btn):hover { color: var(--mtk-branco); }
+.rodape__lista span { color: var(--mtk-cinza-claro); }
+
+.rodape__base {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mtk-16);
+  justify-content: space-between;
+  /* Folga extra embaixo: o CTA flutuante é fixed e cobriria a nota legal. */
+  padding-block: var(--mtk-24) calc(var(--mtk-24) + 72px);
+  border-top: 1px solid var(--mtk-concreto);
+  font-family: var(--mtk-mono);
+  font-size: 12px;
+  color: var(--mtk-nevoa);
+}
+
+/* ── Lightbox ──────────────────────────────────────────────────────────
+   Acima do modal (100), porque nasce de dentro dele. Mostra a foto inteira,
+   sem corte: é justamente o que o slider não faz. */
+
+.modal__slide img { cursor: zoom-in; }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--mtk-16);
+  padding: clamp(var(--mtk-16), 4vw, var(--mtk-48));
+  background: rgba(14, 15, 12, .96);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--mtk-medio), visibility var(--mtk-medio);
+}
+.lightbox.is-aberto { visibility: visible; opacity: 1; }
+
+.lightbox__foto {
+  grid-column: 2;
+  justify-self: center;
+  max-width: 100%;
+  max-height: 88vh;
+  object-fit: contain;
+  cursor: zoom-out;
+  transform: scale(.97);
+  transition: transform var(--mtk-medio);
+}
+.lightbox.is-aberto .lightbox__foto { transform: none; }
+
+.lightbox__seta,
+.lightbox__fechar {
+  width: 48px; height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .08);
+  color: var(--mtk-branco);
+  font-size: 26px;
+  line-height: 1;
+  transition: background var(--mtk-rapido), border-color var(--mtk-rapido);
+}
+.lightbox__seta:hover,
+.lightbox__fechar:hover { background: var(--mtk-vermelho); border-color: var(--mtk-vermelho); }
+.lightbox__seta--anterior { grid-column: 1; }
+.lightbox__seta--proxima { grid-column: 3; }
+
+.lightbox__fechar {
+  position: absolute;
+  top: var(--mtk-16); right: var(--mtk-16);
+  font-size: 18px;
+}
+
+.lightbox__contador {
+  position: absolute;
+  left: 50%; bottom: var(--mtk-16);
+  transform: translateX(-50%);
+  margin: 0;
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .08em;
+  color: var(--mtk-nevoa);
+}
+
+/* No celular a foto ocupa a tela e as setas viram sobreposição, senão sobra
+   pouco espaço para a imagem, que é o motivo de existir o lightbox. */
+@media (max-width: 700px) {
+  .lightbox { grid-template-columns: 1fr; padding: var(--mtk-16); }
+  .lightbox__foto { grid-column: 1; max-height: 78vh; }
+  .lightbox__seta {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 42px; height: 42px;
+  }
+  .lightbox__seta--anterior { left: var(--mtk-12); }
+  .lightbox__seta--proxima { right: var(--mtk-12); }
+}
+
+/* ── Consentimento ─────────────────────────────────────────────────────
+   Fica ACIMA do CTA flutuante (70) e do menu (90), porque bloqueia decisão de
+   dado. Abaixo do modal (100) só porque nunca aparecem juntos. */
+
+.consentimento {
+  position: fixed;
+  left: var(--mtk-16);
+  bottom: var(--mtk-16);
+  z-index: 95;
+  max-width: 360px;
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--mtk-concreto);
+  border-radius: var(--mtk-r-card);
+  background: rgba(28, 30, 26, .94);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .38);
+  color: var(--mtk-branco);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--mtk-medio), transform var(--mtk-medio);
+}
+.consentimento.is-visivel { opacity: 1; transform: none; }
+
+.consentimento__texto { font-size: 12.5px; line-height: 1.5; }
+.consentimento__texto p { margin: 0; color: var(--mtk-linha-forte); }
+.consentimento__texto a { color: var(--mtk-papel); text-decoration-color: var(--mtk-vermelho-texto); }
+.consentimento__texto a:hover { color: var(--mtk-vermelho-texto); }
+
+.consentimento__acoes { display: flex; gap: var(--mtk-8); }
+.consentimento__acoes .btn {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 12px;
+}
+.consentimento .btn--contorno { border-color: var(--mtk-nevoa); color: var(--mtk-papel); }
+.consentimento .btn--contorno:hover { border-color: var(--mtk-papel); background: var(--mtk-papel); color: var(--mtk-preto); }
+
+/* No celular a coluna é estreita demais para um cartão flutuante lateral: o
+   aviso vira uma faixa rente à base. Como o CTA de WhatsApp mora no mesmo
+   canto, ele sobe enquanto o aviso estiver aberto e volta sozinho depois. */
+@media (max-width: 560px) {
+  .consentimento {
+    left: var(--mtk-12);
+    right: var(--mtk-12);
+    bottom: var(--mtk-12);
+    max-width: none;
+  }
+  body:has(.consentimento.is-visivel) .flutuante { bottom: 136px; }
+}
+
+/* Botão que se comporta como link, para reabrir a escolha pelo rodapé. */
+.rodape__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mtk-papel);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rodape__link:hover { color: var(--mtk-vermelho-texto); }
+
+/* ── CTA flutuante ─────────────────────────────────────────────────────── */
+
+.flutuante {
+  position: fixed;
+  right: var(--mtk-24);
+  bottom: var(--mtk-24);
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mtk-12);
+  padding: 14px 22px 14px 16px;
+  border-radius: var(--mtk-r-btn);
+  background: var(--mtk-whats);
+  color: var(--mtk-preto);
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  transition: opacity var(--mtk-medio), transform var(--mtk-medio), visibility var(--mtk-medio), background var(--mtk-rapido), bottom var(--mtk-medio);
+}
+.flutuante.is-visivel { opacity: 1; visibility: visible; transform: none; }
+/* Radar: dois aneis que nascem no botao e se expandem, em ciclo lento.
+   O cliente pediu "piscando sempre"; piscar de verdade e desaconselhavel
+   (o WCAG 2.3.1 limita conteudo que pisca a menos de 3 vezes por segundo,
+   por risco de convulsao fotossensivel) e, para quem nao tem esse risco,
+   cansa e vira ruido. O radar chama a mesma atencao sem trocar a opacidade
+   do botao: quem le o rotulo continua lendo. */
+@keyframes mtk-radar {
+  0%   { transform: scale(1);   opacity: .55; }
+  70%  { transform: scale(2.1); opacity: 0; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+
+.flutuante::before,
+.flutuante::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--mtk-whats);
+  animation: mtk-radar 2.8s cubic-bezier(.2, .7, .3, 1) infinite;
+}
+/* O segundo anel sai na metade do ciclo: o pulso vira continuo em vez de
+   sumir e reaparecer. */
+.flutuante::after { animation-delay: 1.4s; }
+
+/* Parado no hover: quem ja encontrou o botao nao precisa mais ser chamado, e
+   o anel competiria com o proprio clique. */
+.flutuante:hover::before,
+.flutuante:hover::after { animation-play-state: paused; opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .flutuante::before,
+  .flutuante::after { animation: none; opacity: 0; }
+}
+
+.flutuante:hover { background: #3BE07A; color: var(--mtk-preto); }
+.flutuante svg { width: 24px; height: 24px; flex: none; }
+
+@media (max-width: 620px) {
+  .flutuante { padding: 16px; gap: 0; }
+  .flutuante span { display: none; }
+}
+
+/* ── motion: estado inicial das entradas ───────────────────────────────── */
+
+/* Sem JS (ou com GSAP indisponível) nada fica invisível: a classe só é
+   aplicada pelo próprio script depois de confirmar que vai animar. */
+.js-anima [data-anima] { opacity: 0; transform: translateY(16px); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .js-anima [data-anima] { opacity: 1; transform: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BLOCOS AUTORAIS DA MOTOKKA
+   Desenhados a partir de como a marca fala no Instagram (@motokka_prime):
+   "Vem de Motokka", os "zeros" (CNH, IPVA, ruído), fachada vermelha e preta,
+   conversa de balcão. Nada aqui existe na LP que serviu de referência.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── capa ──────────────────────────────────────────────────────────────── */
+
+.capa {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: flex-end;
+  /* Header + capa + letreiro = uma tela. O letreiro fecha a dobra como parte
+     da capa. `svh` depois de `vh`: no celular, 100vh conta a barra do
+     navegador e empurraria o letreiro para fora. É min-height: em tela baixa
+     o conteúdo manda e o letreiro desce junto. */
+  min-height: calc(100vh - var(--mtk-header) - var(--mtk-faixa));
+  min-height: calc(100svh - var(--mtk-header) - var(--mtk-faixa));
+  padding-block: var(--mtk-96) var(--mtk-64);
+  background: var(--mtk-preto);
+  color: var(--mtk-papel);
+  overflow: hidden;
+}
+
+/* Fundo: a fachada e a calçada da loja, em loop. */
+.capa__midia { position: absolute; inset: 0; z-index: -2; }
+.capa__midia img,
+.capa__midia video {
+  /* Os dois ocupam a mesma caixa: estático, o vídeo empilharia abaixo do
+     pôster e tocaria invisível fora da capa. */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.capa__midia video { opacity: 0; transition: opacity 600ms ease-out; }
+.capa__midia video.is-pronto { opacity: 1; }
+
+/* Scrim: o vídeo nunca fica sem véu. Fecha à esquerda e embaixo, onde está o
+   texto, e abre à direita para a loja aparecer. */
+.capa__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(14, 15, 12, .9) 0%, rgba(14, 15, 12, .66) 46%, rgba(14, 15, 12, .18) 100%),
+    linear-gradient(to top, rgba(14, 15, 12, .92) 0%, rgba(14, 15, 12, 0) 52%);
+}
+
+.capa__grade { display: grid; grid-template-columns: minmax(0, 1fr); }
+.capa__texto { display: grid; gap: var(--mtk-24); max-width: 900px; }
+
+.capa__selo {
+  margin: 0;
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mtk-vermelho-texto);
+}
+
+/* O chamado da marca, do tamanho da fachada. Vermelho só no nome: em corpo
+   desse tamanho ele passa no contraste sobre preto. */
+.capa__titulo {
+  margin: 0;
+  font-family: var(--mtk-display);
+  font-weight: 900;
+  font-stretch: 125%;
+  font-size: clamp(52px, 8.4vw, 128px);
+  line-height: .86;
+  letter-spacing: -.035em;
+  text-transform: uppercase;
+}
+.capa__titulo span { display: block; color: var(--mtk-vermelho); }
+
+.capa__lead {
+  margin: 0;
+  max-width: 46ch;
+  font-size: clamp(17px, 1.5vw, 20px);
+  line-height: 1.5;
+  color: var(--mtk-linha-forte);
+  text-wrap: pretty;
+}
+
+/* Três fatos da loja no registro do painel: rótulo em névoa, dado em mono. */
+.capa__dados {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  gap: var(--mtk-32);
+  margin: var(--mtk-8) 0 0;
+  padding-top: var(--mtk-24);
+  border-top: 1px solid rgba(243, 242, 236, .28);
+}
+.capa__dados div { display: grid; gap: 4px; }
+.capa__dados dt { font-size: 12px; color: var(--mtk-linha-forte); }
+.capa__dados dd { margin: 0; font-family: var(--mtk-mono); font-weight: 600; font-size: 13px; }
+
+@media (max-width: 860px) {
+  .capa { padding-block: var(--mtk-48) var(--mtk-32); }
+  /* No celular o texto ocupa a largura toda: o véu fecha por igual. */
+  .capa__scrim { background: linear-gradient(to top, rgba(14, 15, 12, .95) 0%, rgba(14, 15, 12, .82) 55%, rgba(14, 15, 12, .5) 100%); }
+  .capa__titulo { font-size: clamp(40px, 12vw, 92px); }
+  .capa__dados { grid-template-columns: minmax(0, 1fr); gap: var(--mtk-12); }
+  .capa__dados div { grid-template-columns: 84px minmax(0, 1fr); align-items: baseline; }
+  .capa .u-acoes { flex-wrap: nowrap; gap: var(--mtk-8); }
+  .capa .u-acoes .btn { flex: 1 1 0; min-width: 0; padding-inline: 10px; font-size: 13px; letter-spacing: 0; }
+}
+
+/* ── faixa ─────────────────────────────────────────────────────────────── */
+
+.faixa {
+  display: flex;
+  align-items: center;
+  height: var(--mtk-faixa);
+  overflow: hidden;
+  background: var(--mtk-vermelho);
+  color: var(--mtk-branco);
+}
+.faixa__trilho {
+  display: flex;
+  width: max-content;
+  animation: mtk-faixa 38s linear infinite;
+}
+.faixa__trilho span {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-stretch: 115%;
+  font-size: clamp(15px, 1.6vw, 20px);
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* O separador é do item, não `gap`: as duas metades ficam com a mesma largura
+   e o -50% emenda sem pulo. */
+.faixa__trilho span::after { content: "/"; margin-inline: 22px; opacity: .55; }
+@keyframes mtk-faixa { to { transform: translate3d(-50%, 0, 0); } }
+@media (prefers-reduced-motion: reduce) { .faixa__trilho { animation: none; } }
+
+/* ── quatro zeros ──────────────────────────────────────────────────────── */
+
+.zeros {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 2px solid var(--mtk-preto);
+}
+.zero {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--mtk-8);
+  padding: var(--mtk-24) var(--mtk-24) var(--mtk-24) 0;
+}
+.zero + .zero { padding-left: var(--mtk-24); border-left: 1px solid var(--mtk-linha-forte); }
+.zero__numero {
+  font-family: var(--mtk-display);
+  font-weight: 900;
+  font-stretch: 125%;
+  font-size: clamp(96px, 11vw, 168px);
+  line-height: .8;
+  letter-spacing: -.04em;
+  color: var(--mtk-vermelho);
+}
+.zero__titulo {
+  margin: var(--mtk-12) 0 0;
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-stretch: 110%;
+  font-size: 22px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.zero p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--mtk-grafite); }
+.zero .tag { margin-top: var(--mtk-4); }
+
+@media (max-width: 860px) {
+  .zeros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .zero { padding: var(--mtk-24) var(--mtk-16) var(--mtk-24) 0; border-bottom: 1px solid var(--mtk-linha-forte); }
+  .zero + .zero { padding-left: var(--mtk-16); }
+  .zero:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .zero__titulo { font-size: 18px; }
+}
+
+/* ── régua da CNH ──────────────────────────────────────────────────────── */
+
+.regua {
+  display: grid;
+  gap: var(--mtk-24);
+  padding: clamp(var(--mtk-24), 4vw, 48px);
+  background: var(--mtk-branco);
+  border: 1px solid var(--mtk-linha);
+  border-radius: var(--mtk-r-card);
+}
+/* A regra desenhada: tudo à esquerda do marco anda sem habilitação. */
+.regua__trilho {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 14px;
+  margin-top: var(--mtk-32);
+  border-radius: var(--mtk-r-btn);
+  overflow: visible;
+}
+.regua__zona--livre { background: var(--mtk-ok-texto-claro); border-radius: 999px 0 0 999px; }
+.regua__zona--exige { background: #D9A441; border-radius: 0 999px 999px 0; }
+.regua__marco {
+  position: absolute;
+  left: 50%; top: -8px; bottom: -8px;
+  width: 3px;
+  background: var(--mtk-preto);
+}
+.regua__marco b {
+  position: absolute;
+  left: 50%; bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.regua__lados { display: grid; grid-template-columns: 1fr 1fr; gap: var(--mtk-32); }
+.regua__lado { display: grid; gap: var(--mtk-12); align-content: start; justify-items: start; }
+.regua__titulo {
+  margin: 0;
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-stretch: 110%;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+.checklist--neutra svg { color: var(--mtk-apoio); }
+.regua__nota {
+  margin: 0;
+  padding-top: var(--mtk-24);
+  border-top: 1px solid var(--mtk-linha);
+  font-size: 15px;
+  color: var(--mtk-grafite);
+}
+@media (max-width: 640px) {
+  .regua__lados { grid-template-columns: minmax(0, 1fr); }
+  .regua__marco b { font-size: 12px; }
+}
+
+/* ── a conta ───────────────────────────────────────────────────────────── */
+
+.conta {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: clamp(var(--mtk-32), 6vw, 96px);
+  align-items: center;
+}
+.conta__texto { display: grid; gap: var(--mtk-16); }
+.conta__campo { display: grid; gap: var(--mtk-12); margin-top: var(--mtk-16); }
+.conta__rotulo { font-size: 14px; color: var(--mtk-cinza-claro); }
+.conta__km {
+  font-family: var(--mtk-mono);
+  font-weight: 600;
+  font-size: clamp(34px, 4vw, 48px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: var(--mtk-r-btn);
+  background: var(--mtk-concreto);
+  outline-offset: 6px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--mtk-vermelho);
+  border: 3px solid var(--mtk-papel);
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--mtk-vermelho);
+  border: 3px solid var(--mtk-papel);
+  cursor: pointer;
+}
+
+.conta__painel {
+  display: grid;
+  gap: var(--mtk-24);
+  padding: clamp(var(--mtk-24), 3vw, 40px);
+  background: var(--mtk-asfalto);
+  border: 1px solid var(--mtk-concreto);
+  border-radius: var(--mtk-r-card);
+}
+.conta__linha {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: var(--mtk-8) var(--mtk-16);
+}
+.conta__nome { font-family: var(--mtk-mono); font-weight: 600; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--mtk-cinza-claro); }
+.conta__linha b { font-family: var(--mtk-mono); font-weight: 600; font-size: clamp(22px, 2.4vw, 30px); font-variant-numeric: tabular-nums; }
+/* A barra da tomada tem a largura proporcional ao custo: é o gráfico. O JS só
+   escreve --proporcao. O mínimo de 6px garante que ela nunca some. */
+.conta__barra { grid-column: 1 / -1; height: 18px; border-radius: 3px; transition: width var(--mtk-medio); }
+.conta__barra--gasolina { width: 100%; background: var(--mtk-nevoa); }
+.conta__barra--eletrico { width: max(6px, calc(var(--proporcao, .14) * 100%)); background: var(--mtk-vermelho); }
+.conta__linha:nth-child(2) b { color: var(--mtk-vermelho-texto); }
+.conta__resultado {
+  margin: 0;
+  padding-top: var(--mtk-24);
+  border-top: 1px solid var(--mtk-concreto);
+  font-weight: 700;
+  font-size: clamp(18px, 1.8vw, 22px);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+@media (max-width: 900px) { .conta { grid-template-columns: minmax(0, 1fr); } }
+
+/* ── usos ──────────────────────────────────────────────────────────────── */
+
+.usos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--mtk-16); }
+.uso {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--mtk-12);
+  min-height: 280px;
+  padding: var(--mtk-24);
+  background: var(--mtk-branco);
+  border: 1px solid var(--mtk-linha);
+  border-radius: var(--mtk-r-card);
+  color: var(--mtk-preto);
+  text-decoration: none;
+  transition: transform var(--mtk-rapido), box-shadow var(--mtk-rapido), border-color var(--mtk-rapido);
+}
+.uso:hover { transform: translateY(-2px); border-color: var(--mtk-preto); box-shadow: var(--mtk-sombra-1); color: var(--mtk-preto); }
+.uso__indice { font-family: var(--mtk-mono); font-weight: 600; font-size: 13px; color: var(--mtk-apoio); }
+.uso__titulo { font-family: var(--mtk-display); font-weight: 800; font-stretch: 110%; font-size: 24px; line-height: 1.05; text-transform: uppercase; }
+.uso__texto { font-size: 15px; line-height: 1.5; color: var(--mtk-grafite); }
+.uso__seta { font-family: var(--mtk-mono); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+.uso--destaque { background: var(--mtk-preto); border-color: var(--mtk-preto); color: var(--mtk-papel); }
+.uso--destaque:hover { color: var(--mtk-papel); border-color: var(--mtk-vermelho); }
+.uso--destaque .uso__indice { color: var(--mtk-vermelho-texto); }
+.uso--destaque .uso__texto { color: var(--mtk-linha-forte); }
+.uso--destaque .uso__seta { color: var(--mtk-vermelho-texto); }
+@media (max-width: 1000px) { .usos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .usos { grid-template-columns: minmax(0, 1fr); } .uso { min-height: 0; } }
+
+/* ── loja + test ride ──────────────────────────────────────────────────── */
+
+.loja {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  gap: clamp(var(--mtk-32), 5vw, 72px);
+  align-items: start;
+}
+.loja__info { display: grid; gap: var(--mtk-16); justify-items: start; }
+.loja__endereco {
+  margin: 0;
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-stretch: 110%;
+  font-size: clamp(24px, 3vw, 38px);
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.loja__mapa {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-top: var(--mtk-8);
+  border: 1px solid var(--mtk-concreto);
+  border-radius: var(--mtk-r-card);
+  overflow: hidden;
+  background: var(--mtk-asfalto);
+}
+.loja__mapa iframe { width: 100%; height: 100%; border: 0; filter: grayscale(1) contrast(1.05); }
+.loja__form {
+  padding: clamp(var(--mtk-24), 3vw, 40px);
+  background: var(--mtk-papel);
+  color: var(--mtk-preto);
+  border-radius: var(--mtk-r-card);
+}
+.loja__form-titulo {
+  margin: 0 0 var(--mtk-8);
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-stretch: 110%;
+  font-size: 24px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+/* O formulário é uma ilha clara na seção escura: a legenda volta ao tom de papel. */
+.s-escura .loja__form .t-caption { color: var(--mtk-apoio); }
+@media (max-width: 900px) { .loja { grid-template-columns: minmax(0, 1fr); } }
+
+/* ── dúvidas ───────────────────────────────────────────────────────────── */
+
+.duvidas {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  gap: clamp(var(--mtk-32), 5vw, 72px);
+  align-items: start;
+}
+.duvidas__cabeca { position: sticky; top: calc(var(--mtk-header) + var(--mtk-32)); display: grid; gap: var(--mtk-16); justify-items: start; }
+.duvidas .faq { max-width: none; margin: 0; }
+@media (max-width: 900px) {
+  .duvidas { grid-template-columns: minmax(0, 1fr); }
+  .duvidas__cabeca { position: static; }
+}
+
+/* ── oficina ───────────────────────────────────────────────────────────── */
+
+.oficina {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--mtk-24);
+  align-items: center;
+}
+.oficina__icone { width: 40px; height: 40px; color: var(--mtk-vermelho); }
+.oficina .t-body { margin-top: var(--mtk-8); }
+@media (max-width: 860px) {
+  .oficina { grid-template-columns: minmax(0, 1fr); justify-items: start; }
+}
+
+@media print {
+  .header, .flutuante, .menu, .modal { display: none !important; }
+}
