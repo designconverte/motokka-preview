@@ -759,7 +759,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
    uma coluna fantasma. */
 .vitrine__grade {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   justify-items: center;
   gap: var(--mtk-24);
 }

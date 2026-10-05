@@ -364,6 +364,12 @@
     }
 
     function barraFiltro() {
+      /* Filtro de uma opção só não é filtro. Com todos os modelos na mesma
+         categoria a barra some; volta sozinha quando o catálogo tiver duas. */
+      const comModelos = window.MOTOKKA_CATEGORIAS.filter((c) => c.id !== 'todos' && contar(c.id) > 0);
+      barra.hidden = comModelos.length < 2;
+      if (barra.hidden) return;
+
       barra.innerHTML = window.MOTOKKA_CATEGORIAS.map((c) => `
         <button class="filtro__btn" type="button" data-cat="${c.id}" aria-pressed="${c.id === ativa}">
           ${escapar(c.nome)}
