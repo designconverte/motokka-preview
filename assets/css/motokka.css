@@ -594,7 +594,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   transition: transform 460ms cubic-bezier(.2, .8, .2, 1) 100ms;
 }
 
-.menu__lista { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--mtk-4); }
+.menu__lista { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--mtk-12); }
 /* A máscara é o efeito: o rótulo emerge de dentro do wrap, não aparece por cima.
    Tire o overflow:hidden e o efeito morre: o item passa a deslizar por cima
    do layout, que é outra coisa (e pior). */
@@ -603,9 +603,10 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   display: block;
   font-family: var(--mtk-display);
   font-weight: 800;
-  font-stretch: 115%;
-  font-size: clamp(28px, 7.4vw, 38px);
-  line-height: 1.1;
+  font-stretch: 110%;
+  /* Cada item cabe numa linha só em 360 px ("Preciso de CNH?" é o mais longo). */
+  font-size: clamp(20px, 5.8vw, 26px);
+  line-height: 1.2;
   letter-spacing: -.02em;
   text-transform: uppercase;
   color: var(--mtk-papel);
