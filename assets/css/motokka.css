@@ -759,7 +759,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
    uma coluna fantasma. */
 .vitrine__grade {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
   justify-items: center;
   gap: var(--mtk-24);
 }
@@ -824,9 +824,10 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 
 .card__foto {
   position: relative;
-  /* 5:4 em vez de 4:3: os recortes são largos, e num poço mais baixo o produto
-     encolhia para caber na horizontal, sobrando faixa vazia em cima e embaixo. */
-  aspect-ratio: 5 / 4;
+  /* 4:5, em pé: as fotos da loja são verticais, e num poço deitado a scooter
+     perdia o guidão ou a roda. As imagens de card já saem nessa proporção de
+     build-modelos.py. */
+  aspect-ratio: 4 / 5;
   background: radial-gradient(ellipse at 50% 40%, var(--mtk-branco) 0%, var(--mtk-papel-2) 75%);
   overflow: hidden;
 
@@ -977,7 +978,7 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 }
 .modal.is-aberto .modal__caixa { transform: none; }
 
-.modal__galeria { background: radial-gradient(ellipse at 50% 40%, var(--mtk-branco) 0%, var(--mtk-papel-2) 75%); display: grid; grid-template-rows: 1fr auto; min-height: 0; }
+.modal__galeria { background: var(--mtk-asfalto); display: grid; grid-template-rows: 1fr auto; min-height: 0; }
 
 /* Trilho do slider. O snap é do CSS; o JS só cuida do arrasto com mouse e de
    manter a miniatura ativa em sincronia. Em touch, desliza nativo. */
@@ -1044,10 +1045,9 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
 
 .modal__slide img.is-inteira {
   object-fit: contain;
-  /* Branco, e nao a Nevoa do poco: a foto do fabricante ja vem sobre branco,
-     entao a area vazia do `contain` precisa casar com o fundo DELA, senao
-     aparece um retangulo mais claro dentro da moldura. */
-  background: #FFFFFF;
+  /* A sobra do `contain` fica no asfalto da galeria: as fotos são da loja,
+     com fundo escuro, e uma tarja branca ao lado delas parecia defeito. */
+  background: var(--mtk-asfalto);
 }
 .modal__miniaturas {
   display: flex;

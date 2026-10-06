@@ -1,21 +1,19 @@
 /* ==========================================================================
    MOTOKKA PRIME · catálogo de modelos
    --------------------------------------------------------------------------
-   FONTE DOS DADOS: fichas preenchidas pelo cliente no formulário de catálogo
-   (projeto/modelos/briefing_modelo.md, outubro de 2026). Seis modelos, todos
-   autopropelidos. Nada aqui é estimativa: o que a ficha não traz (peso, valor,
-   dimensões) simplesmente não aparece.
+   FONTE DOS DADOS: fichas e fotos enviadas pelo cliente no formulário de
+   catálogo (outubro de 2026): sete modelos, todos declarados autopropelidos.
+   Nada aqui é estimativa: o que a ficha não traz (peso, valor, dimensões)
+   simplesmente não aparece. As fotos saem de projeto/build-modelos.py.
 
    PENDÊNCIAS:
-   · FOTOS. O formulário registra de 2 a 5 fotos anexadas por modelo, mas elas
-     não chegaram junto com as fichas. ZS e Classic Retrô usam quadros dos
-     vídeos gravados na loja; os outros quatro usam a imagem "foto em breve".
-     Ao receber as fotos: salve em assets/img/models/, troque `foto`/`galeria`
-     e, se forem recortes sem fundo, marque `recorte: true`.
+   · XM-14: a ficha lista as cores Vermelho e "Sem nome" (#ffffff, entrou como
+     Branco), mas as duas fotos enviadas mostram uma azul. Confirmar as cores.
+   · Triciclo Foxscoo: o cliente declarou autopropelido, sem CNH, e "3 lugares".
+     O limite de autopropelido é por potência e velocidade, mas vale confirmar
+     o enquadramento de um veículo de três lugares antes de publicar.
    · "Harley" no nome de três modelos é como a loja os chama (é o estilo da
-     scooter). É marca registrada de terceiro: vale confirmar com o cliente se
-     quer mantê-la no site.
-   · XM-14: a segunda cor veio como "Sem nome" (#ffffff). Entrou como Branco.
+     scooter). É marca registrada de terceiro: confirmar se fica no site.
 
    COMO COMPLETAR: preencha `classificacao`, `categoria` e `specs`. O card monta
    os números e a etiqueta legal sozinho, e campo sem dado some da ficha.
@@ -75,14 +73,8 @@ const ITENS_COMUNS = ['Painel em LED', 'Farol em LED', 'Setas', 'Buzina', 'Alarm
 /* A ficha traz esta observação em quatro modelos. */
 const NOTA_LOTE = 'As cores variam por lote: consulte as disponíveis.';
 
-const SEM_FOTO = {
-  foto: 'assets/img/models/foto-em-breve.webp',
-  recorte: false,
-  galeria: [{ src: 'assets/img/models/foto-em-breve.webp', alt: 'Foto do modelo em breve', inteira: true }],
-};
-
-/* Ordem da vitrine: primeiro os dois que já têm foto real da loja. */
-window.MOTOKKA_ORDEM = ['zs', 'classic-retro', 'harley-x13', 'harley-x21', 'harley-xe14', 'xm-14'];
+/* Ordem da vitrine. */
+window.MOTOKKA_ORDEM = ['zs', 'classic-retro', 'harley-x13', 'harley-x21', 'harley-xe14', 'triciclo-foxscoo', 'xm-14'];
 
 window.MOTOKKA_MODELOS = [
   {
@@ -94,17 +86,36 @@ window.MOTOKKA_MODELOS = [
     classificacao: 'autopropelido',
     foto: 'assets/img/models/zs-card.webp',
     recorte: false,
-    alt: 'Três scooters elétricas ZS lado a lado na calçada da loja: preta, vermelha e verde',
+    alt: 'Scooter elétrica ZS vermelha, com uma verde e uma preta ao fundo',
     galeria: [
-      { src: 'assets/img/models/zs-1.webp', alt: 'Scooters ZS preta, vermelha e verde em frente à Motokka' },
-      { src: 'assets/img/models/zs-2.webp', alt: 'Frente da scooter ZS preta, com as luzes de LED', detalhe: true },
+      { src: 'assets/img/models/zs-1.webp', alt: 'ZS vermelha na loja', inteira: true },
+      { src: 'assets/img/models/zs-5.webp', alt: 'Painel digital da ZS', inteira: true, detalhe: true },
     ],
     specs: SPECS_COMUNS,
     equipamentos: [...ITENS_COMUNS, 'Marcha a ré'],
     cores: [
-      { nome: 'Preto', hex: '#000000' },
-      { nome: 'Vermelho', hex: '#E60000' },
-      { nome: 'Verde', hex: '#3B8748' },
+      {
+        nome: 'Vermelho',
+        hex: '#E60000',
+        galeria: [
+          { src: 'assets/img/models/zs-1.webp', alt: 'ZS vermelha na loja', inteira: true },
+          { src: 'assets/img/models/zs-2.webp', alt: 'ZS vermelha de frente, com os faróis de LED acesos', inteira: true },
+        ],
+      },
+      {
+        nome: 'Verde',
+        hex: '#3B8748',
+        galeria: [
+          { src: 'assets/img/models/zs-3.webp', alt: 'ZS verde na loja', inteira: true },
+        ],
+      },
+      {
+        nome: 'Preto',
+        hex: '#000000',
+        galeria: [
+          { src: 'assets/img/models/zs-4.webp', alt: 'ZS preta na loja', inteira: true },
+        ],
+      },
     ],
     preco: null,
   },
@@ -118,15 +129,17 @@ window.MOTOKKA_MODELOS = [
     chamada: NOTA_LOTE,
     foto: 'assets/img/models/classic-retro-card.webp',
     recorte: false,
-    alt: 'Scooter elétrica Classic Retrô off white, de perfil, na entrada da loja',
+    alt: 'Scooter elétrica Classic Retrô off white, de frente em três quartos',
     galeria: [
-      { src: 'assets/img/models/classic-retro-1.webp', alt: 'Classic Retrô off white de perfil, na entrada da Motokka' },
-      { src: 'assets/img/models/classic-retro-2.webp', alt: 'Guidão, para-brisa e retrovisor redondo da Classic Retrô', detalhe: true },
+      { src: 'assets/img/models/classic-retro-1.webp', alt: 'Classic Retrô off white, de frente em três quartos', inteira: true },
+      { src: 'assets/img/models/classic-retro-2.webp', alt: 'Classic Retrô off white, de perfil', inteira: true },
+      { src: 'assets/img/models/classic-retro-3.webp', alt: 'Traseira da Classic Retrô, com a lanterna de LED acesa', inteira: true },
     ],
-    // A ficha deste modelo não marca bateria removível.
     specs: { ...SPECS_COMUNS, bateria: 'Lítio' },
     equipamentos: [...ITENS_COMUNS, 'Baú'],
-    cores: [{ nome: 'Off White', hex: '#D1D1D1' }],
+    cores: [
+      { nome: 'Off White', hex: '#D1D1D1' },
+    ],
     preco: null,
   },
   {
@@ -137,11 +150,19 @@ window.MOTOKKA_MODELOS = [
     categoria: 'autopropelido',
     classificacao: 'autopropelido',
     chamada: NOTA_LOTE,
-    ...SEM_FOTO,
-    alt: 'Foto da Harley X13 Reino Unido em breve',
+    foto: 'assets/img/models/harley-x13-card.webp',
+    recorte: false,
+    alt: 'Scooter elétrica Harley X13 azul, com a bandeira do Reino Unido no para-lama',
+    galeria: [
+      { src: 'assets/img/models/harley-x13-1.webp', alt: 'Harley X13 Reino Unido de frente', inteira: true },
+      { src: 'assets/img/models/harley-x13-2.webp', alt: 'Harley X13 Reino Unido de perfil', inteira: true },
+      { src: 'assets/img/models/harley-x13-3.webp', alt: 'Traseira da Harley X13, com a bandeira do Reino Unido no para-lama', inteira: true },
+    ],
     specs: SPECS_COMUNS,
     equipamentos: [...ITENS_COMUNS, 'Marcha a ré', 'NFC', 'Bluetooth e app'],
-    cores: [{ nome: 'Azul', hex: '#002AFF' }],
+    cores: [
+      { nome: 'Azul', hex: '#002AFF' },
+    ],
     preco: null,
   },
   {
@@ -151,14 +172,37 @@ window.MOTOKKA_MODELOS = [
     descritivo: 'Scooter elétrica',
     categoria: 'autopropelido',
     classificacao: 'autopropelido',
-    ...SEM_FOTO,
-    alt: 'Foto da Harley X21 em breve',
+    foto: 'assets/img/models/harley-x21-card.webp',
+    recorte: false,
+    alt: 'Scooter elétrica Harley X21 preta, de frente em três quartos',
+    galeria: [
+      { src: 'assets/img/models/harley-x21-1.webp', alt: 'Harley X21 preta de frente', inteira: true },
+    ],
     specs: SPECS_COMUNS,
     equipamentos: [...ITENS_COMUNS, 'Marcha a ré'],
     cores: [
-      { nome: 'Azul', hex: '#001DFA' },
-      { nome: 'Vermelho', hex: '#FF0000' },
-      { nome: 'Preto', hex: '#000000' },
+      {
+        nome: 'Preto',
+        hex: '#000000',
+        galeria: [
+          { src: 'assets/img/models/harley-x21-1.webp', alt: 'Harley X21 preta de frente', inteira: true },
+          { src: 'assets/img/models/harley-x21-2.webp', alt: 'Harley X21 preta de trás, com a lanterna acesa', inteira: true },
+        ],
+      },
+      {
+        nome: 'Vermelho',
+        hex: '#FF0000',
+        galeria: [
+          { src: 'assets/img/models/harley-x21-3.webp', alt: 'Harley X21 vermelha em frente à loja', inteira: true },
+        ],
+      },
+      {
+        nome: 'Azul',
+        hex: '#001DFA',
+        galeria: [
+          { src: 'assets/img/models/harley-x21-4.webp', alt: 'Harley X21 azul na rua', inteira: true },
+        ],
+      },
     ],
     preco: null,
   },
@@ -170,11 +214,45 @@ window.MOTOKKA_MODELOS = [
     categoria: 'autopropelido',
     classificacao: 'autopropelido',
     chamada: NOTA_LOTE,
-    ...SEM_FOTO,
-    alt: 'Foto da Harley XE14 em breve',
+    foto: 'assets/img/models/harley-xe14-card.webp',
+    recorte: false,
+    alt: 'Scooter elétrica Harley XE14 off white, em estúdio',
+    galeria: [
+      { src: 'assets/img/models/harley-xe14-1.webp', alt: 'Harley XE14 off white, de frente em três quartos', inteira: true },
+      { src: 'assets/img/models/harley-xe14-2.webp', alt: 'Harley XE14 off white, de perfil', inteira: true },
+      { src: 'assets/img/models/harley-xe14-3.webp', alt: 'Harley XE14 off white, de trás em três quartos', inteira: true },
+      { src: 'assets/img/models/harley-xe14-4.webp', alt: 'Harley XE14 off white, de frente', inteira: true },
+    ],
     specs: SPECS_COMUNS,
     equipamentos: [...ITENS_COMUNS, 'Marcha a ré', 'NFC'],
-    cores: [{ nome: 'Off White', hex: '#CCCCCC' }],
+    cores: [
+      { nome: 'Off White', hex: '#CCCCCC' },
+    ],
+    preco: null,
+  },
+  {
+    id: 'triciclo-foxscoo',
+    nome: 'Triciclo Foxscoo',
+    fabricante: 'Motokka',
+    descritivo: 'Triciclo elétrico',
+    categoria: 'autopropelido',
+    classificacao: 'autopropelido',
+    chamada: 'Três lugares. As cores variam por lote: consulte as disponíveis.',
+    foto: 'assets/img/models/triciclo-foxscoo-card.webp',
+    recorte: false,
+    alt: 'Triciclo elétrico Foxscoo preto, com cesto dianteiro e banco traseiro',
+    galeria: [
+      { src: 'assets/img/models/triciclo-foxscoo-1.webp', alt: 'Triciclo Foxscoo preto, de frente em três quartos', inteira: true },
+      { src: 'assets/img/models/triciclo-foxscoo-2.webp', alt: 'Triciclo Foxscoo com o cesto dianteiro e o farol aceso', inteira: true },
+      { src: 'assets/img/models/triciclo-foxscoo-3.webp', alt: 'Triciclo Foxscoo de perfil, com os bancos', inteira: true },
+      { src: 'assets/img/models/triciclo-foxscoo-4.webp', alt: 'Triciclo Foxscoo de frente', inteira: true },
+      { src: 'assets/img/models/triciclo-foxscoo-5.webp', alt: 'Traseira do Triciclo Foxscoo, com o baú', inteira: true },
+    ],
+    specs: { ...SPECS_COMUNS, bateria: 'Lítio', freios: undefined },
+    equipamentos: [...ITENS_COMUNS, 'Baú', 'Marcha a ré'],
+    cores: [
+      { nome: 'Preto', hex: '#000000' },
+    ],
     preco: null,
   },
   {
@@ -185,9 +263,13 @@ window.MOTOKKA_MODELOS = [
     categoria: 'autopropelido',
     classificacao: 'autopropelido',
     chamada: NOTA_LOTE,
-    ...SEM_FOTO,
-    alt: 'Foto da XM-14 em breve',
-    // Único modelo de 800 W e 150 kg de carga.
+    foto: 'assets/img/models/xm-14-card.webp',
+    recorte: false,
+    alt: 'Scooter elétrica XM-14 azul, com cesto dianteiro',
+    galeria: [
+      { src: 'assets/img/models/xm-14-1.webp', alt: 'XM-14 azul, de frente em três quartos', inteira: true },
+      { src: 'assets/img/models/xm-14-2.webp', alt: 'XM-14 azul de frente, com o cesto e o farol de LED', inteira: true },
+    ],
     specs: { ...SPECS_COMUNS, potencia: { valor: 800, unidade: 'W' }, ocupantes: '150 kg' },
     equipamentos: ITENS_COMUNS,
     cores: [

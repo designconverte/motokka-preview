@@ -294,7 +294,7 @@
         <article class="card" data-categoria="${m.categoria || ''}" data-id="${m.id}" data-anima>
           <button class="card__foto${m.recorte ? ' card__foto--recorte' : ''}" type="button"
                   data-detalhes="${m.id}" aria-label="Ver detalhes do ${escapar(`${m.fabricante} ${m.nome}`)}">
-            <img src="${m.foto}" alt="${escapar(m.alt)}" loading="lazy" decoding="async" width="900" height="675">
+            <img src="${m.foto}" alt="${escapar(m.alt)}" loading="lazy" decoding="async" width="800" height="1000">
             <div class="card__tags u-tags">${etiquetas(m)}</div>
           </button>
           <div class="card__corpo">
