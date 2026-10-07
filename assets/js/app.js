@@ -68,7 +68,9 @@
     for (const [k, v] of Object.entries(trocas)) {
       texto = texto.replaceAll(`{${k}}`, v);
     }
-    return `https://wa.me/${cfg.whatsapp.e164}?text=${encodeURIComponent(texto)}`;
+    // Locação fala com outro time, em outro número. Ver config.js.
+    const destino = cfg.whatsappLocacao?.mensagens.includes(chave) ? cfg.whatsappLocacao : cfg.whatsapp;
+    return `https://wa.me/${destino.e164}?text=${encodeURIComponent(texto)}`;
   }
 
   /* ── 1. Dados da loja no HTML ─────────────────────────────────────────── */

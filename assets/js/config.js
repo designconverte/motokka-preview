@@ -19,6 +19,14 @@ window.MOTOKKA_CONFIG = {
     e164: '5516981019689',
   },
 
+  /* Locação tem time e número próprios. Todo link de WhatsApp vai para o
+     número de vendas, menos os que usam uma das mensagens listadas aqui. */
+  whatsappLocacao: {
+    numero: '(16) 99767-0245',
+    e164: '5516997670245',
+    mensagens: ['locacao'],
+  },
+
   /* O briefing não trouxe CEP. Se chegar, acrescente `cep` aqui e inclua-o em
      `completo` e `busca`: o mapa e o "traçar rota" ficam mais precisos. */
   endereco: {
@@ -61,6 +69,6 @@ window.MOTOKKA_CONFIG = {
     usoDia: 'Olá! Vim pelo site da Motokka. Quero uma elétrica para o dia a dia. Qual modelo vocês indicam?',
     usoTrabalho: 'Olá! Vim pelo site da Motokka. Quero uma elétrica para trabalhar e fazer entregas. Qual modelo vocês indicam?',
     usoDiversao: 'Olá! Vim pelo site da Motokka e quero ver patinetes, e-bikes e a linha infantil.',
-    locacao: 'Olá! Vim pelo site da Motokka e quero saber sobre locação: modelos e condições.',
+    locacao: 'Olá! Vim pelo site da Motokka e quero saber sobre locação de motos: modelos e condições.',
   },
 };
