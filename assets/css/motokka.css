@@ -1349,6 +1349,9 @@ body.menu-aberto .header__toggle { border-color: var(--mtk-papel); }
   border-radius: var(--mtk-r-card);
   background: var(--mtk-ok-fundo-claro);
   border: 1px solid rgba(11, 107, 58, .3);
+  /* Cor própria: o formulário mora numa seção escura, e sem isto o texto
+     herdava o papel da seção e sumia sobre o verde claro. */
+  color: var(--mtk-grafite);
   text-align: center;
 }
 .form__sucesso h3 { color: var(--mtk-ok-texto-claro); }
