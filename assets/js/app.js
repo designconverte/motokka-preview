@@ -1124,7 +1124,57 @@
 
   /* ── 12. Formulário de test ride ──────────────────────────────────────── */
 
+  /* De onde o visitante veio. Os parâmetros de campanha só existem na URL de
+     chegada: se ele navega por âncoras ou volta depois, somem. Por isso são
+     guardados na primeira página da visita e reaproveitados no envio do
+     formulário. sessionStorage, e não cookie: vale só para esta aba e some ao
+     fechar. */
+  const CAMPOS_CAMPANHA = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'gbraid', 'wbraid', 'fbclid'];
+  const CHAVE_CHEGADA = 'mtk:chegada';
+
+  function registrarChegada() {
+    try {
+      if (sessionStorage.getItem(CHAVE_CHEGADA)) return;
+      const params = new URLSearchParams(location.search);
+      const campanha = {};
+      CAMPOS_CAMPANHA.forEach((c) => { if (params.get(c)) campanha[c] = params.get(c).slice(0, 200); });
+      sessionStorage.setItem(CHAVE_CHEGADA, JSON.stringify({
+        campanha,
+        entrada: location.href.split('#')[0].slice(0, 300),
+        referencia: document.referrer.slice(0, 300),
+      }));
+    } catch { /* navegação privada sem storage: o lead segue sem origem */ }
+  }
+
+  /** Envia o lead ao servidor, que avisa a loja por e-mail. Não bloqueia nada:
+      se falhar, o WhatsApp já abriu e o visitante não percebe. */
+  function avisarLoja(lead) {
+    // Na prévia do GitHub Pages não existe servidor.
+    if (document.documentElement.dataset.semServidor === '1') return;
+
+    let chegada = {};
+    try { chegada = JSON.parse(sessionStorage.getItem(CHAVE_CHEGADA) || '{}'); } catch { /* segue sem */ }
+
+    // Quem escolheu "só o essencial" não tem a campanha associada ao contato.
+    const recusouMedicao = window.SENSOR?.consentimento?.().aceitou === false;
+
+    fetch('api/lead.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // keepalive: o envio termina mesmo que a aba troque para o WhatsApp.
+      keepalive: true,
+      body: JSON.stringify({
+        ...lead,
+        campanha: recusouMedicao ? {} : (chegada.campanha || {}),
+        entrada: recusouMedicao ? '' : (chegada.entrada || ''),
+        referencia: recusouMedicao ? '' : (chegada.referencia || ''),
+        pagina: location.href.split('?')[0].slice(0, 300),
+      }),
+    }).catch(() => { /* sem rede ou sem servidor: o WhatsApp é o caminho */ });
+  }
+
   function formulario() {
+    registrarChegada();
     const form = $('#form-testride');
     if (!form) return;
 
@@ -1167,6 +1217,13 @@
         interesse: $('#tr-interesse').value,
         telefone: whats.value,
         nome_lead: nome.value.trim(),
+      });
+
+      avisarLoja({
+        nome: nome.value.trim(),
+        whatsapp: whats.value,
+        interesse: $('#tr-interesse').value,
+        site: form.elements.site ? form.elements.site.value : '',
       });
 
       window.open(url, '_blank', 'noopener');

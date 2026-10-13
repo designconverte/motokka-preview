@@ -370,6 +370,10 @@
 
       <form class="form loja__form" id="form-testride" novalidate data-anima>
         <p class="loja__form-titulo">Agende o seu test ride</p>
+        <div class="u-visually-hidden" aria-hidden="true">
+          <label for="tr-site">Não preencha este campo</label>
+          <input type="text" id="tr-site" name="site" tabindex="-1" autocomplete="off">
+        </div>
         <div class="form__campo">
           <label class="form__rotulo" for="tr-nome">Seu nome</label>
           <input type="text" id="tr-nome" name="nome" autocomplete="name" required>
