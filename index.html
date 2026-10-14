@@ -28,7 +28,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=Outfit:wght@400..700&display=swap">
-<link rel="stylesheet" href="assets/css/motokka.css?v=1013b">
+<link rel="stylesheet" href="assets/css/motokka.css">
 
 <link rel="preload" as="image" href="assets/img/loja/hero-poster.webp" fetchpriority="high">
 
@@ -118,11 +118,11 @@
 
     <div class="u-container capa__grade">
       <div class="capa__texto">
-        <p class="capa__selo" data-anima>● Motos elétricas · Centro de Franca</p>
+        <h1 class="capa__selo" id="capa-titulo" data-anima>● Motos e scooters elétricas em Franca/SP</h1>
 
-        <h1 class="capa__titulo" id="capa-titulo" data-anima>
+        <p class="capa__titulo" data-anima>
           Vem de <span>Motokka.</span>
-        </h1>
+        </p>
 
         <p class="capa__lead" data-anima>
           Bikes, motos e scooters elétricas pra trabalhar, entregar e passear em
@@ -599,17 +599,25 @@
 {
   "@context": "https://schema.org",
   "@type": "AutoDealer",
+  "@id": "https://motokka.com.br/#loja",
   "name": "Motokka Prime",
+  "alternateName": "Motokka",
   "legalName": "Motokka Prime",
   "taxID": "61.563.072/0001-31",
-  "description": "Loja de mobilidade elétrica no Centro de Franca/SP: scooters, autopropelidos, ciclomotores, e-bikes e triciclos, com test ride na loja e assistência técnica própria.",
+  "description": "Loja de motos e scooters elétricas no Centro de Franca/SP: modelos autopropelidos que dispensam CNH, triciclo elétrico, locação de motos, test ride na loja e assistência técnica própria.",
   "telephone": "+55 16 98101-9689",
   "url": "https://motokka.com.br/",
   "image": "https://motokka.com.br/assets/img/social/motokka-compartilhamento.jpg",
+  "logo": "https://motokka.com.br/assets/img/brand/favicon-180.png",
+  "hasMap": "https://www.google.com/maps/search/?api=1&query=Rua+Marechal+Deodoro%2C+1258%2C+Centro%2C+Franca+-+SP",
+  "contactPoint": [
+    { "@type": "ContactPoint", "contactType": "sales", "telephone": "+55 16 98101-9689", "availableLanguage": "pt-BR" },
+    { "@type": "ContactPoint", "contactType": "customer service", "name": "Locação de motos", "telephone": "+55 16 99767-0245", "availableLanguage": "pt-BR" }
+  ],
   "sameAs": ["https://www.instagram.com/motokka_prime/"],
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Rua Marechal Deodoro, 1258",
+    "streetAddress": "Rua Marechal Deodoro, 1258 - Centro",
     "addressLocality": "Franca",
     "addressRegion": "SP",
     "addressCountry": "BR"
