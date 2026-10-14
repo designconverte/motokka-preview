@@ -2,7 +2,8 @@
    MOTOKKA PRIME · catálogo de modelos
    --------------------------------------------------------------------------
    FONTE DOS DADOS: fichas e fotos enviadas pelo cliente no formulário de
-   catálogo (outubro de 2026): sete modelos, todos declarados autopropelidos.
+   catálogo (outubro de 2026): sete modelos, todos declarados autopropelidos; seis desde 14/10/2026,
+   quando a loja tirou a X21 preta de linha (a XE14 enviada era a X21).
    Nada aqui é estimativa: o que a ficha não traz (peso, valor, dimensões)
    simplesmente não aparece. As fotos saem de projeto/build-modelos.py.
 
@@ -74,7 +75,7 @@ const ITENS_COMUNS = ['Painel em LED', 'Farol em LED', 'Setas', 'Buzina', 'Alarm
 const NOTA_LOTE = 'As cores variam por lote: consulte as disponíveis.';
 
 /* Ordem da vitrine. */
-window.MOTOKKA_ORDEM = ['zs', 'classic-retro', 'harley-x13', 'harley-x21', 'harley-xe14', 'triciclo-foxscoo', 'xm-14'];
+window.MOTOKKA_ORDEM = ['zs', 'classic-retro', 'harley-x13', 'harley-x21', 'triciclo-foxscoo', 'xm-14'];
 
 window.MOTOKKA_MODELOS = [
   {
@@ -166,62 +167,24 @@ window.MOTOKKA_MODELOS = [
     preco: null,
   },
   {
+    /* Era cadastrada como "Harley XE14". Em 14/10/2026 a loja corrigiu: esta é
+       a X21. A X21 preta anterior saiu de linha e foi removida. A ficha é a
+       que veio com a XE14 (Off White, NFC), a que bate com a foto. */
     id: 'harley-x21',
     nome: 'Harley X21',
     fabricante: 'Motokka',
     descritivo: 'Scooter elétrica',
     categoria: 'autopropelido',
     classificacao: 'autopropelido',
-    foto: 'assets/img/models/harley-x21-card.webp',
-    recorte: false,
-    alt: 'Scooter elétrica Harley X21 preta, de frente em três quartos',
-    galeria: [
-      { src: 'assets/img/models/harley-x21-1.webp', alt: 'Harley X21 preta de frente', inteira: true },
-    ],
-    specs: SPECS_COMUNS,
-    equipamentos: [...ITENS_COMUNS, 'Marcha a ré'],
-    cores: [
-      {
-        nome: 'Preto',
-        hex: '#000000',
-        galeria: [
-          { src: 'assets/img/models/harley-x21-1.webp', alt: 'Harley X21 preta de frente', inteira: true },
-          { src: 'assets/img/models/harley-x21-2.webp', alt: 'Harley X21 preta de trás, com a lanterna acesa', inteira: true },
-        ],
-      },
-      {
-        nome: 'Vermelho',
-        hex: '#FF0000',
-        galeria: [
-          { src: 'assets/img/models/harley-x21-3.webp', alt: 'Harley X21 vermelha em frente à loja', inteira: true },
-        ],
-      },
-      {
-        nome: 'Azul',
-        hex: '#001DFA',
-        galeria: [
-          { src: 'assets/img/models/harley-x21-4.webp', alt: 'Harley X21 azul na rua', inteira: true },
-        ],
-      },
-    ],
-    preco: null,
-  },
-  {
-    id: 'harley-xe14',
-    nome: 'Harley XE14',
-    fabricante: 'Motokka',
-    descritivo: 'Scooter elétrica',
-    categoria: 'autopropelido',
-    classificacao: 'autopropelido',
     chamada: NOTA_LOTE,
-    foto: 'assets/img/models/harley-xe14-card.webp',
+    foto: 'assets/img/models/harley-x21-branca-card.webp',
     recorte: false,
-    alt: 'Scooter elétrica Harley XE14 off white, em estúdio',
+    alt: 'Scooter elétrica Harley X21 off white, em estúdio',
     galeria: [
-      { src: 'assets/img/models/harley-xe14-1.webp', alt: 'Harley XE14 off white, de frente em três quartos', inteira: true },
-      { src: 'assets/img/models/harley-xe14-2.webp', alt: 'Harley XE14 off white, de perfil', inteira: true },
-      { src: 'assets/img/models/harley-xe14-3.webp', alt: 'Harley XE14 off white, de trás em três quartos', inteira: true },
-      { src: 'assets/img/models/harley-xe14-4.webp', alt: 'Harley XE14 off white, de frente', inteira: true },
+      { src: 'assets/img/models/harley-x21-branca-1.webp', alt: 'Harley X21 off white, de frente em três quartos', inteira: true },
+      { src: 'assets/img/models/harley-x21-branca-2.webp', alt: 'Harley X21 off white, de perfil', inteira: true },
+      { src: 'assets/img/models/harley-x21-branca-3.webp', alt: 'Harley X21 off white, de trás em três quartos', inteira: true },
+      { src: 'assets/img/models/harley-x21-branca-4.webp', alt: 'Harley X21 off white, de frente', inteira: true },
     ],
     specs: SPECS_COMUNS,
     equipamentos: [...ITENS_COMUNS, 'Marcha a ré', 'NFC'],
