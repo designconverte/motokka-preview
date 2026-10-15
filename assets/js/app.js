@@ -8,6 +8,13 @@
   'use strict';
 
   const cfg = window.MOTOKKA_CONFIG;
+
+  /* Modelo com `oculto: true` no catálogo some do site inteiro (vitrine,
+     modal, link #modelo/... e lista do formulário) sem perder ficha nem
+     fotos. Serve para falta de estoque: para voltar, é só apagar a linha. */
+  const OCULTOS = (window.MOTOKKA_MODELOS || []).filter((m) => m.oculto);
+  window.MOTOKKA_MODELOS = (window.MOTOKKA_MODELOS || []).filter((m) => !m.oculto);
+
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
   const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
@@ -1177,6 +1184,11 @@
     registrarChegada();
     const form = $('#form-testride');
     if (!form) return;
+
+    // Modelo oculto também sai da lista "Modelo de interesse".
+    $$('#tr-interesse option').forEach((opcao) => {
+      if (OCULTOS.some((m) => m.nome === opcao.value)) opcao.remove();
+    });
 
     const marcar = (campo, erroId, mensagem) => {
       const erro = $(`#${erroId}`);

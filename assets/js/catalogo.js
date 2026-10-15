@@ -16,6 +16,10 @@
    · "Harley" no nome de três modelos é como a loja os chama (é o estilo da
      scooter). É marca registrada de terceiro: confirmar se fica no site.
 
+   OCULTAR UM MODELO (falta de estoque): acrescente `oculto: true` nele. Some
+   da vitrine, do modal e do formulário, mas ficha e fotos continuam aqui.
+   Hoje oculta: Harley X21 (sem estoque desde 15/10/2026).
+
    COMO COMPLETAR: preencha `classificacao`, `categoria` e `specs`. O card monta
    os números e a etiqueta legal sozinho, e campo sem dado some da ficha.
    ========================================================================== */
@@ -172,6 +176,8 @@ window.MOTOKKA_MODELOS = [
        que veio com a XE14 (Off White, NFC), a que bate com a foto. */
     id: 'harley-x21',
     nome: 'Harley X21',
+    // Oculta em 15/10/2026 a pedido da loja: sem estoque. Apague para voltar.
+    oculto: true,
     fabricante: 'Motokka',
     descritivo: 'Scooter elétrica',
     categoria: 'autopropelido',
