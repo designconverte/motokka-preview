@@ -69,6 +69,29 @@
     emitir(slugEvento(`btn_interesse_${modelo.fabricante}_${modelo.nome}`), dados, { somenteNavegador: true });
   }
 
+  /* ── Preço (recursos.precos) ──────────────────────────────────────────── */
+
+  const reais = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+
+  /** HTML do preço do modelo, ou '' se a chave estiver desligada. */
+  function blocoPreco(m, classe) {
+    if (!cfg.recursos?.precos) return '';
+    const p = m.preco;
+    if (!p || !p.valor) {
+      return `<div class="${classe} ${classe}--consulta"><b>Preço sob consulta</b></div>`;
+    }
+    const linhas = [];
+    if (p.condicao) linhas.push(escapar(p.condicao));
+    if (p.parcelado) linhas.push(`ou ${reais.format(p.parcelado.valor)} em até ${p.parcelado.vezes}x sem juros`);
+    if (p.boleto) linhas.push('Também no boleto');
+    return `
+      <div class="${classe}">
+        ${p.de ? `<s>${reais.format(p.de)}</s>` : ''}
+        <b>${reais.format(p.valor)}</b>
+        ${linhas.map((l) => `<small>${l}</small>`).join('')}
+      </div>`;
+  }
+
   /** Monta o link do WhatsApp com a mensagem já preenchida. */
   function linkWhats(chave, trocas = {}) {
     let texto = cfg.mensagens[chave] || cfg.mensagens.geral;
@@ -312,8 +335,9 @@
               <h3 class="card__nome">${escapar(m.nome)}</h3>
             </div>
             ${blocoNumeros(m)}
+            ${blocoPreco(m, 'card__preco')}
             <div class="card__acoes">
-              <a class="btn btn--primario" href="${linkWhats('modelo', { modelo: `${m.fabricante} ${m.nome}` })}" target="_blank" rel="noopener">Comprar <span aria-hidden="true">→</span></a>
+              <a class="btn btn--primario" data-modelo="${m.id}" href="${linkWhats('modelo', { modelo: `${m.fabricante} ${m.nome}` })}" target="_blank" rel="noopener">Comprar <span aria-hidden="true">→</span></a>
               <button class="btn btn--contorno" type="button" data-detalhes="${m.id}">+ Detalhes</button>
             </div>
           </div>
@@ -865,6 +889,8 @@
       botao.href = cor
         ? linkWhats('modeloCor', { modelo: nome, cor })
         : linkWhats('modelo', { modelo: nome });
+      botao.dataset.modelo = atual.id;
+      botao.dataset.cor = cor || '';
     }
 
     /* `irParaModelo`, e não `irPara`: já existe um `irPara(indice)` neste
@@ -915,6 +941,9 @@
       $('#modal-eyebrow').textContent = `${atual.fabricante} · ${classe ? classe.extenso : atual.descritivo}`;
       $('#modal-titulo').textContent = atual.nome;
       $('#modal-tags').innerHTML = classe ? `<span class="tag tag--${classe.tom}">${escapar(classe.rotulo)}</span>` : '';
+      const preco = $('#modal-preco');
+      preco.innerHTML = blocoPreco(atual, 'modal__preco-caixa');
+      preco.hidden = !preco.innerHTML;
 
       const chamada = $('#modal-chamada');
       chamada.textContent = atual.chamada || '';
@@ -1180,6 +1209,220 @@
     }).catch(() => { /* sem rede ou sem servidor: o WhatsApp é o caminho */ });
   }
 
+  /* ── Formulário de qualificação (recursos.capturaLead) ───────────────────
+     Com a chave ligada, os botões de contato abrem este formulário em vez de
+     ir direto ao WhatsApp. Ao enviar: o lead vai para o servidor (e-mail e
+     planilha), a conversão é contada e o WhatsApp abre com as respostas.
+
+     A interceptação é um ouvinte de clique em fase de CAPTURA no documento:
+     ele roda antes de qualquer outro e, ao segurar o clique, impede que o
+     sensor ou o card contem um lead que ainda não aconteceu. Com a chave
+     desligada, ele não faz nada e os botões voltam a ser links diretos. */
+
+  const captura = (() => {
+    const raiz = $('#captura');
+    const CHAVE = 'mtk:qualificado';
+    let destino = null;
+    let gatilho = null;
+    let formOriginal = '';
+
+    const ativo = () => Boolean(cfg.recursos?.capturaLead) && Boolean(raiz);
+    // Quem já respondeu nesta visita não responde de novo: vai direto.
+    const jaRespondeu = () => { try { return sessionStorage.getItem(CHAVE) === '1'; } catch { return false; } };
+
+    function origemDo(link) {
+      if (link.id === 'modal-cta') return 'ficha';
+      if (link.closest('.card')) return 'card';
+      return link.closest('[data-origem]')?.dataset.origem || 'pagina';
+    }
+
+    function deveCapturar(link) {
+      if (!ativo() || jaRespondeu()) return false;
+      if (link.dataset.captura === 'nao' || link.closest('.captura, .form__sucesso')) return false;
+      return !(cfg.captura?.excecoes || []).includes(origemDo(link));
+    }
+
+    function opcoes(select, lista, primeira) {
+      select.innerHTML = `<option value="">${escapar(primeira)}</option>`
+        + lista.map((v) => `<option value="${escapar(v)}">${escapar(v)}</option>`).join('');
+    }
+
+    function preencherListas() {
+      const c = cfg.captura || {};
+      opcoes($('#cp-modelo'), (window.MOTOKKA_MODELOS || []).map((m) => m.nome), 'Ainda não sei');
+      opcoes($('#cp-prazo'), c.prazos || [], 'Selecione');
+      opcoes($('#cp-orcamento'), c.orcamentos || [], 'Selecione');
+      opcoes($('#cp-pagamento'), c.pagamentos || [], 'Selecione');
+    }
+
+    function abrir(link) {
+      const modelo = (window.MOTOKKA_MODELOS || []).find((m) => m.id === link.dataset.modelo);
+      destino = {
+        numero: (link.href.match(/wa\.me\/(\d+)/) || [])[1] || cfg.whatsapp.e164,
+        origem: origemDo(link),
+        modelo,
+        cor: link.dataset.cor || '',
+      };
+      gatilho = link;
+
+      // Se o menu do celular estiver aberto, fecha antes.
+      const toggle = $('#menu-toggle');
+      if (toggle?.getAttribute('aria-expanded') === 'true') toggle.click();
+
+      // Depois de um envio o formulário vira a mensagem de sucesso: restaura.
+      if (!$('#form-captura')) {
+        $('.captura__sucesso', raiz)?.remove();
+        $('.captura__caixa', raiz).insertAdjacentHTML('beforeend', formOriginal);
+        ligarForm();
+      }
+      $('#cp-modelo').value = modelo ? modelo.nome : '';
+
+      raiz.classList.add('is-aberto');
+      raiz.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('is-locked');
+      window.MOTOKKA_MOTION?.travarScroll(true);
+      requestAnimationFrame(() => $('#cp-nome')?.focus({ preventScroll: true }));
+
+      emitir('lead_form_aberto', {
+        origem: destino.origem,
+        item_name: modelo ? `${modelo.fabricante} ${modelo.nome}` : undefined,
+      }, { somenteNavegador: true });
+    }
+
+    function fechar() {
+      raiz.classList.remove('is-aberto');
+      raiz.setAttribute('aria-hidden', 'true');
+      // A ficha do modelo pode estar aberta por baixo: nesse caso a rolagem
+      // continua travada.
+      if (!$('#modal.is-aberto')) {
+        document.body.classList.remove('is-locked');
+        window.MOTOKKA_MOTION?.travarScroll(false);
+      }
+      gatilho?.focus({ preventScroll: true });
+      gatilho = null;
+    }
+
+    function marcar(id, erroId, mensagem) {
+      const campo = $(`#${id}`);
+      campo.setAttribute('aria-invalid', String(Boolean(mensagem)));
+      $(`#${erroId}`).textContent = mensagem || '';
+      return !mensagem;
+    }
+
+    function ligarForm() {
+      const form = $('#form-captura');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const valor = (id) => $(`#${id}`).value.trim();
+        const digitos = valor('cp-whats').replace(/\D/g, '');
+
+        const ok = [
+          marcar('cp-nome', 'erro-cp-nome', valor('cp-nome').length < 2 ? 'Informe o seu nome.' : ''),
+          marcar('cp-whats', 'erro-cp-whats', digitos.length < 10 || digitos.length > 11 ? 'Informe o WhatsApp com DDD.' : ''),
+          marcar('cp-prazo', 'erro-cp-prazo', valor('cp-prazo') ? '' : 'Escolha uma opção.'),
+          marcar('cp-orcamento', 'erro-cp-orcamento', valor('cp-orcamento') ? '' : 'Escolha uma opção.'),
+          marcar('cp-pagamento', 'erro-cp-pagamento', valor('cp-pagamento') ? '' : 'Escolha uma opção.'),
+        ];
+        const primeiroErro = ['cp-nome', 'cp-whats', 'cp-prazo', 'cp-orcamento', 'cp-pagamento'][ok.indexOf(false)];
+        if (primeiroErro) { $(`#${primeiroErro}`).focus(); return; }
+
+        const respostas = {
+          nome: valor('cp-nome'),
+          interesse: valor('cp-modelo') || 'Ainda não sei',
+          prazo: valor('cp-prazo'),
+          orcamento: valor('cp-orcamento'),
+          pagamento: valor('cp-pagamento'),
+        };
+        if (destino.cor && destino.modelo && respostas.interesse === destino.modelo.nome) {
+          respostas.interesse += ` (cor ${destino.cor})`;
+        }
+
+        let texto = cfg.mensagens.qualificado;
+        for (const [k, v] of Object.entries(respostas)) texto = texto.replaceAll(`{${k}}`, v);
+        const url = `https://wa.me/${destino.numero}?text=${encodeURIComponent(texto)}`;
+
+        avisarLoja({
+          tipo: 'contato',
+          origem: destino.origem,
+          nome: respostas.nome,
+          whatsapp: valor('cp-whats'),
+          interesse: valor('cp-modelo') || 'Ainda não sei',
+          cor: destino.cor,
+          prazo: respostas.prazo,
+          orcamento: respostas.orcamento,
+          pagamento: respostas.pagamento,
+          site: valor('cp-site'),
+        });
+
+        /* A conversão é contada aqui, e não no clique: só vale quem respondeu.
+           Prazo, orçamento e pagamento vão junto para segmentar no GA4; nome e
+           telefone o sensor tira antes de mandar ao Google e à Meta. */
+        const qualificacao = {
+          prazo: respostas.prazo,
+          orcamento: respostas.orcamento,
+          pagamento: respostas.pagamento,
+          telefone: valor('cp-whats'),
+          nome_lead: respostas.nome,
+        };
+        const escolhido = (window.MOTOKKA_MODELOS || []).find((m) => m.nome === valor('cp-modelo'));
+        if (escolhido) {
+          interesseNoModelo(escolhido, destino.origem, { ...qualificacao, cor: destino.cor || undefined });
+        } else {
+          emitir('generate_lead', { origem: destino.origem, interesse: 'Ainda não sei', ...qualificacao });
+        }
+
+        try { sessionStorage.setItem(CHAVE, '1'); } catch { /* sem storage: pergunta de novo, sem problema */ }
+        window.open(url, '_blank', 'noopener');
+
+        form.outerHTML = `
+          <div class="form__sucesso captura__sucesso" role="status">
+            <h3 class="t-h3">Valeu, ${escapar(respostas.nome.split(' ')[0])}!</h3>
+            <p style="margin:0">
+              Abrimos o WhatsApp com as suas respostas. Se a janela não apareceu,
+              toque no botão abaixo. O consultor responde em horário comercial.
+            </p>
+            <a class="btn btn--primario" href="${url}" target="_blank" rel="noopener" data-rastreado="1" data-captura="nao" style="justify-self:center">
+              Abrir o WhatsApp
+            </a>
+          </div>`;
+      });
+    }
+
+    function iniciar() {
+      if (!raiz) return;
+      formOriginal = $('#form-captura').outerHTML;
+      preencherListas();
+      formOriginal = $('#form-captura').outerHTML;
+      ligarForm();
+
+      document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href*="wa.me"]');
+        if (!link || !deveCapturar(link)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        abrir(link);
+      }, true);
+
+      raiz.addEventListener('click', (e) => { if (e.target.closest('[data-fechar-captura]')) fechar(); });
+
+      // ESC fecha só o formulário, mesmo com a ficha do modelo aberta por baixo.
+      document.addEventListener('keydown', (e) => {
+        if (!raiz.classList.contains('is-aberto')) return;
+        if (e.key === 'Escape') { e.stopPropagation(); fechar(); return; }
+        // Foco preso dentro do formulário.
+        if (e.key === 'Tab') {
+          const focaveis = $$('button, input:not([tabindex="-1"]), select, a[href]', raiz).filter((el) => el.offsetParent !== null);
+          const primeiro = focaveis[0];
+          const ultimo = focaveis[focaveis.length - 1];
+          if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+          else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+        }
+      }, true);
+    }
+
+    return { iniciar };
+  })();
+
   function formulario() {
     registrarChegada();
     const form = $('#form-testride');
@@ -1359,6 +1602,7 @@
     depoimentos();
     simulador();
     formulario();
+    captura.iniciar();
     midia();
     mapa();
     letreiro();

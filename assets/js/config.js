@@ -58,6 +58,27 @@ window.MOTOKKA_CONFIG = {
     instagram: 'https://www.instagram.com/motokka_prime/',
   },
 
+  /* ── Chaves de liga/desliga ──────────────────────────────────────────────
+     Funcionalidades pedidas pela loja em 16/10/2026. Para desligar uma, troque
+     para false e publique: a página volta a ser como era antes dela. */
+  recursos: {
+    // Preço no card e na ficha do modelo. Modelo sem preço mostra "sob consulta".
+    precos: true,
+    // Formulário de qualificação antes do WhatsApp, nos botões de contato.
+    capturaLead: true,
+  },
+
+  /* Formulário de qualificação (recursos.capturaLead). */
+  captura: {
+    /* Botões que vão direto ao WhatsApp, sem formulário, pelo data-origem.
+       Assistência e locação ficam fora: as perguntas são de compra. Para
+       incluir um deles, apague o nome da lista. */
+    excecoes: ['flutuante', 'assistencia', 'rodape_assistencia', 'locacao', 'rodape_locacao'],
+    prazos: ['Em 7 dias', 'Em 14 dias', 'Ainda este mês', 'Daqui a 3 meses'],
+    orcamentos: ['De R$ 4.500 a R$ 5.500', 'De R$ 6.000 a R$ 7.500', 'De R$ 8.000 a R$ 9.500', 'Acima de R$ 10.000'],
+    pagamentos: ['Cartão de crédito', 'PIX', 'Dinheiro', 'Entrada + cartão de crédito'],
+  },
+
   /* Mensagens pré-preenchidas. `{modelo}` e `{cor}` são trocados em tempo de clique. */
   mensagens: {
     geral: 'Olá! Vim pelo site da Motokka e quero falar sobre mobilidade elétrica.',
@@ -70,5 +91,7 @@ window.MOTOKKA_CONFIG = {
     usoTrabalho: 'Olá! Vim pelo site da Motokka. Quero uma elétrica para trabalhar e fazer entregas. Qual modelo vocês indicam?',
     usoDiversao: 'Olá! Vim pelo site da Motokka e quero ver patinetes, e-bikes e a linha infantil.',
     locacao: 'Olá! Vim pelo site da Motokka e quero saber sobre locação de motos: modelos e condições.',
+    // Depois do formulário de qualificação. Linhas sem resposta são omitidas.
+    qualificado: 'Olá! Vim pelo site da Motokka.\n\nNome: {nome}\nInteresse: {interesse}\nPretendo comprar: {prazo}\nOrçamento: {orcamento}\nPagamento: {pagamento}',
   },
 };

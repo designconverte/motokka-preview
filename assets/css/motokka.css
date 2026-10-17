@@ -2164,6 +2164,142 @@ input[type="range"]::-moz-range-thumb {
   .oficina { grid-template-columns: minmax(0, 1fr); justify-items: start; }
 }
 
+/* ── formulário de qualificação (recursos.capturaLead) ─────────────────── */
+
+/* Acima do modal do modelo (100) e do lightbox (110): pode abrir a partir da
+   ficha, com ela ainda aberta por baixo. */
+.captura {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: var(--mtk-24);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--mtk-medio), visibility var(--mtk-medio);
+}
+.captura.is-aberto { visibility: visible; opacity: 1; }
+.captura__scrim { position: absolute; inset: 0; background: rgba(14, 15, 12, .78); backdrop-filter: blur(3px); }
+
+.captura__caixa {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100dvh - var(--mtk-48));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--mtk-papel);
+  color: var(--mtk-preto);
+  border-radius: var(--mtk-r-card);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
+  transform: translateY(14px) scale(.985);
+  transition: transform var(--mtk-medio);
+}
+.captura.is-aberto .captura__caixa { transform: none; }
+
+/* Topo com a fachada da loja por trás, sob véu escuro: a mesma imagem da capa. */
+.captura__topo {
+  display: grid;
+  gap: var(--mtk-8);
+  padding: var(--mtk-32) var(--mtk-32) var(--mtk-24);
+  color: var(--mtk-papel);
+  background:
+    linear-gradient(180deg, rgba(14, 15, 12, .72) 0%, rgba(14, 15, 12, .94) 100%),
+    url("../img/loja/hero-poster.webp") center 40% / cover;
+}
+.captura__selo {
+  margin: 0;
+  font-family: var(--mtk-rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mtk-vermelho-texto);
+}
+.captura__titulo {
+  margin: 0;
+  font-family: var(--mtk-display);
+  font-weight: 900;
+  font-stretch: 125%;
+  font-size: clamp(30px, 6vw, 40px);
+  line-height: .95;
+  letter-spacing: -.02em;
+  text-transform: uppercase;
+}
+.captura__texto { margin: 0; font-size: 15px; line-height: 1.5; color: var(--mtk-linha-forte); max-width: 42ch; }
+
+.captura__form { padding: var(--mtk-24) var(--mtk-32) var(--mtk-32); gap: var(--mtk-12); }
+.captura__linha { display: grid; grid-template-columns: 1fr 1fr; gap: var(--mtk-12); }
+.captura__form .form__rotulo { font-size: 13px; }
+
+/* Fechar fica sobre o topo escuro. */
+.captura__fechar {
+  position: absolute;
+  right: var(--mtk-12); top: var(--mtk-12);
+  z-index: 1;
+  width: 40px; height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(243, 242, 236, .14);
+  color: var(--mtk-papel);
+  font-size: 18px;
+  line-height: 1;
+  transition: background var(--mtk-rapido);
+}
+.captura__fechar:hover { background: var(--mtk-vermelho); }
+
+.captura .form__sucesso { margin: var(--mtk-24) var(--mtk-32) var(--mtk-32); }
+
+@media (max-width: 560px) {
+  .captura { padding: 0; align-items: end; }
+  .captura__caixa { width: 100%; max-height: 92dvh; border-radius: var(--mtk-r-card) var(--mtk-r-card) 0 0; }
+  .captura__topo { padding: var(--mtk-24) var(--mtk-24) var(--mtk-16); }
+  .captura__form { padding: var(--mtk-16) var(--mtk-24) var(--mtk-24); }
+  .captura__linha { grid-template-columns: 1fr; }
+  .captura .form__sucesso { margin: var(--mtk-16) var(--mtk-24) var(--mtk-24); }
+}
+
+/* ── preço (recursos.precos) ───────────────────────────────────────────── */
+
+.card__preco,
+.modal__preco-caixa {
+  display: grid;
+  gap: 2px;
+}
+.card__preco s,
+.modal__preco-caixa s {
+  font-family: var(--mtk-rotulo);
+  font-size: 13px;
+  color: var(--mtk-apoio);
+}
+.card__preco b {
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-stretch: 110%;
+  font-size: 28px;
+  line-height: 1.05;
+  color: var(--mtk-preto);
+  font-variant-numeric: tabular-nums;
+}
+.card__preco small { font-size: 12.5px; line-height: 1.4; color: var(--mtk-apoio); }
+.card__preco--consulta b { font-size: 18px; font-stretch: 100%; text-transform: uppercase; letter-spacing: .02em; }
+
+.modal__preco { margin-top: var(--mtk-4); }
+.modal__preco-caixa s { color: var(--mtk-nevoa); }
+.modal__preco-caixa b {
+  font-family: var(--mtk-display);
+  font-weight: 800;
+  font-stretch: 110%;
+  font-size: 30px;
+  line-height: 1.05;
+  color: var(--mtk-papel);
+  font-variant-numeric: tabular-nums;
+}
+.modal__preco-caixa small { font-size: 13px; line-height: 1.4; color: var(--mtk-cinza-claro); }
+.modal__preco-caixa.modal__preco-caixa--consulta b { font-size: 18px; text-transform: uppercase; }
+
 @media print {
   .header, .flutuante, .menu, .modal { display: none !important; }
 }

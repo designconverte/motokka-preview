@@ -8,13 +8,16 @@
    simplesmente não aparece. As fotos saem de projeto/build-modelos.py.
 
    PENDÊNCIAS:
-   · XM-14: a ficha lista as cores Vermelho e "Sem nome" (#ffffff, entrou como
-     Branco), mas as duas fotos enviadas mostram uma azul. Confirmar as cores.
    · Triciclo Foxscoo: o cliente declarou autopropelido, sem CNH, e "3 lugares".
      O limite de autopropelido é por potência e velocidade, mas vale confirmar
      o enquadramento de um veículo de três lugares antes de publicar.
    · "Harley" no nome de três modelos é como a loja os chama (é o estilo da
      scooter). É marca registrada de terceiro: confirmar se fica no site.
+
+   PREÇO: `preco: { valor, de, condicao, parcelado: { valor, vezes }, boleto }`.
+   Só `valor` é obrigatório; `de` é o preço riscado. `preco: null` mostra
+   "Preço sob consulta". Exibir ou não os preços é chave no config.js
+   (`recursos.precos`). Valores informados pela loja em 16/10/2026.
 
    OCULTAR UM MODELO (falta de estoque): acrescente `oculto: true` nele. Some
    da vitrine, do modal e do formulário, mas ficha e fotos continuam aqui.
@@ -122,7 +125,13 @@ window.MOTOKKA_MODELOS = [
         ],
       },
     ],
-    preco: null,
+    preco: {
+      valor: 9900,
+      de: 10900,
+      condicao: 'à vista no PIX ou dinheiro',
+      parcelado: { valor: 10900, vezes: 12 },
+      boleto: true,
+    },
   },
   {
     id: 'classic-retro',
@@ -145,7 +154,13 @@ window.MOTOKKA_MODELOS = [
     cores: [
       { nome: 'Off White', hex: '#D1D1D1' },
     ],
-    preco: null,
+    preco: {
+      valor: 9900,
+      de: 10000,
+      condicao: 'à vista no PIX ou dinheiro',
+      parcelado: { valor: 10900, vezes: 12 },
+      boleto: true,
+    },
   },
   {
     id: 'harley-x13',
@@ -154,7 +169,7 @@ window.MOTOKKA_MODELOS = [
     descritivo: 'Scooter elétrica',
     categoria: 'autopropelido',
     classificacao: 'autopropelido',
-    chamada: NOTA_LOTE,
+    chamada: 'Edição especial Inglaterra. As cores variam por lote: consulte as disponíveis.',
     foto: 'assets/img/models/harley-x13-card.webp',
     recorte: false,
     alt: 'Scooter elétrica Harley X13 azul, com a bandeira do Reino Unido no para-lama',
@@ -168,7 +183,7 @@ window.MOTOKKA_MODELOS = [
     cores: [
       { nome: 'Azul', hex: '#002AFF' },
     ],
-    preco: null,
+    preco: { valor: 8990 },
   },
   {
     /* Era cadastrada como "Harley XE14". Em 14/10/2026 a loja corrigiu: esta é
@@ -222,7 +237,7 @@ window.MOTOKKA_MODELOS = [
     cores: [
       { nome: 'Preto', hex: '#000000' },
     ],
-    preco: null,
+    preco: { valor: 9990 },
   },
   {
     id: 'xm-14',
@@ -242,10 +257,17 @@ window.MOTOKKA_MODELOS = [
     specs: { ...SPECS_COMUNS, potencia: { valor: 800, unidade: 'W' }, ocupantes: '150 kg' },
     equipamentos: ITENS_COMUNS,
     cores: [
+      { nome: 'Azul', hex: '#1F297A' },
+      { nome: 'Preto', hex: '#000000' },
       { nome: 'Vermelho', hex: '#A30000' },
       { nome: 'Branco', hex: '#FFFFFF' },
     ],
-    preco: null,
+    preco: {
+      valor: 3990,
+      de: 4990,
+      condicao: 'à vista',
+      parcelado: { valor: 4990, vezes: 12 },
+    },
   },
 ];
 

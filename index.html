@@ -548,6 +548,7 @@
           <h2 class="modal__titulo" id="modal-titulo"></h2>
           <div class="u-tags" id="modal-tags"></div>
         </div>
+        <div class="modal__preco" id="modal-preco" hidden></div>
       </div>
 
       <div class="modal__corpo" id="modal-corpo" data-lenis-prevent>
@@ -569,6 +570,68 @@
         </a>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="captura" id="captura" role="dialog" aria-modal="true" aria-labelledby="captura-titulo" aria-hidden="true">
+  <div class="captura__scrim" data-fechar-captura></div>
+  <div class="captura__caixa" data-lenis-prevent>
+    <button class="captura__fechar" type="button" data-fechar-captura aria-label="Fechar formulário">✕</button>
+
+    <div class="captura__topo">
+      <p class="captura__selo">● Atendimento Motokka</p>
+      <h2 class="captura__titulo" id="captura-titulo">Bora achar a sua?</h2>
+      <p class="captura__texto">Responde rapidinho e o consultor já te chama no WhatsApp com a condição certa.</p>
+    </div>
+
+    <form class="form captura__form" id="form-captura" novalidate>
+      <div class="u-visually-hidden" aria-hidden="true">
+        <label for="cp-site">Não preencha este campo</label>
+        <input type="text" id="cp-site" name="site" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="captura__linha">
+        <div class="form__campo">
+          <label class="form__rotulo" for="cp-nome">Seu nome</label>
+          <input type="text" id="cp-nome" name="nome" autocomplete="name" required>
+          <p class="form__erro" id="erro-cp-nome" role="alert"></p>
+        </div>
+        <div class="form__campo">
+          <label class="form__rotulo" for="cp-whats">WhatsApp</label>
+          <input type="tel" id="cp-whats" name="whatsapp" autocomplete="tel" inputmode="numeric" placeholder="(16) 90000-0000" required>
+          <p class="form__erro" id="erro-cp-whats" role="alert"></p>
+        </div>
+      </div>
+
+      <div class="form__campo">
+        <label class="form__rotulo" for="cp-modelo">Qual modelo te interessou?</label>
+        <select id="cp-modelo" name="modelo"></select>
+      </div>
+
+      <div class="form__campo">
+        <label class="form__rotulo" for="cp-prazo">Pretende comprar quando?</label>
+        <select id="cp-prazo" name="prazo" required></select>
+        <p class="form__erro" id="erro-cp-prazo" role="alert"></p>
+      </div>
+
+      <div class="captura__linha">
+        <div class="form__campo">
+          <label class="form__rotulo" for="cp-orcamento">Faixa de orçamento</label>
+          <select id="cp-orcamento" name="orcamento" required></select>
+          <p class="form__erro" id="erro-cp-orcamento" role="alert"></p>
+        </div>
+        <div class="form__campo">
+          <label class="form__rotulo" for="cp-pagamento">Forma de pagamento</label>
+          <select id="cp-pagamento" name="pagamento" required></select>
+          <p class="form__erro" id="erro-cp-pagamento" role="alert"></p>
+        </div>
+      </div>
+
+      <button class="btn btn--primario" type="submit" style="width:100%">
+        Continuar no WhatsApp <span aria-hidden="true">→</span>
+      </button>
+      <p class="t-caption">Ao continuar, o WhatsApp abre com as suas respostas e você só confirma.</p>
+    </form>
   </div>
 </div>
 
