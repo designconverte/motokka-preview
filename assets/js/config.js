@@ -74,6 +74,8 @@ window.MOTOKKA_CONFIG = {
        Assistência e locação ficam fora: as perguntas são de compra. Para
        incluir um deles, apague o nome da lista. */
     excecoes: ['flutuante', 'assistencia', 'rodape_assistencia', 'locacao', 'rodape_locacao'],
+    // Os prazos entram na mensagem do WhatsApp depois de "pretendo comprar":
+    // escreva de um jeito que leia bem nessa frase.
     prazos: ['Em 7 dias', 'Em 14 dias', 'Ainda este mês', 'Daqui a 3 meses'],
     orcamentos: ['De R$ 4.500 a R$ 5.500', 'De R$ 6.000 a R$ 7.500', 'De R$ 8.000 a R$ 9.500', 'Acima de R$ 10.000'],
     pagamentos: ['Cartão de crédito', 'PIX', 'Dinheiro', 'Entrada + cartão de crédito'],
@@ -84,14 +86,21 @@ window.MOTOKKA_CONFIG = {
     geral: 'Olá! Vim pelo site da Motokka e quero falar sobre mobilidade elétrica.',
     modelo: 'Olá! Vim pelo site da Motokka e tenho interesse no modelo {modelo}. Pode me passar ficha técnica e condições?',
     modeloCor: 'Olá! Vim pelo site da Motokka e tenho interesse no {modelo} na cor {cor}. Pode me passar ficha técnica e condições?',
-    testRide: 'Olá! Quero agendar um test ride na Motokka.\n\nNome: {nome}\nInteresse: {interesse}',
+    testRide: 'Oi, tudo bem? Me chamo {nome} e quero agendar um test ride na Motokka. Tenho interesse no modelo {modelo}. Quais horários vocês têm?',
+    testRideSemModelo: 'Oi, tudo bem? Me chamo {nome} e quero agendar um test ride na Motokka. Ainda não escolhi o modelo e queria uma orientação. Quais horários vocês têm?',
     assistencia: 'Olá! Preciso de assistência técnica para o meu veículo elétrico.',
     categoria: 'Olá! Vim pelo site da Motokka e quero ver as opções de {categoria}.',
     usoDia: 'Olá! Vim pelo site da Motokka. Quero uma elétrica para o dia a dia. Qual modelo vocês indicam?',
     usoTrabalho: 'Olá! Vim pelo site da Motokka. Quero uma elétrica para trabalhar e fazer entregas. Qual modelo vocês indicam?',
     usoDiversao: 'Olá! Vim pelo site da Motokka e quero ver patinetes, e-bikes e a linha infantil.',
     locacao: 'Olá! Vim pelo site da Motokka e quero saber sobre locação de motos: modelos e condições.',
-    // Depois do formulário de qualificação. Linhas sem resposta são omitidas.
-    qualificado: 'Olá! Vim pelo site da Motokka.\n\nNome: {nome}\nInteresse: {interesse}\nPretendo comprar: {prazo}\nOrçamento: {orcamento}\nPagamento: {pagamento}',
+    /* Depois do formulário de qualificação. É a pessoa quem envia, então vai
+       escrita como ela escreveria. Orçamento e pagamento ficam de fora de
+       propósito: chegam à equipe pelo e-mail e pela planilha. Para incluir,
+       use {orcamento} e {pagamento}. {modelo} já vem com a cor quando a pessoa
+       escolheu uma na ficha, e {prazo} entra em minúscula logo depois de
+       "pretendo comprar". */
+    qualificado: 'Oi, tudo bem? Me chamo {nome} e vim pelo site da Motokka. Tenho interesse no modelo {modelo} e pretendo comprar {prazo}. Pode me passar as condições?',
+    qualificadoSemModelo: 'Oi, tudo bem? Me chamo {nome} e vim pelo site da Motokka. Ainda estou escolhendo o modelo e pretendo comprar {prazo}. Pode me ajudar a escolher?',
   },
 };

@@ -1347,17 +1347,24 @@
 
         const respostas = {
           nome: valor('cp-nome'),
-          interesse: valor('cp-modelo') || 'Ainda não sei',
           prazo: valor('cp-prazo'),
           orcamento: valor('cp-orcamento'),
           pagamento: valor('cp-pagamento'),
         };
-        if (destino.cor && destino.modelo && respostas.interesse === destino.modelo.nome) {
-          respostas.interesse += ` (cor ${destino.cor})`;
-        }
 
-        let texto = cfg.mensagens.qualificado;
-        for (const [k, v] of Object.entries(respostas)) texto = texto.replaceAll(`{${k}}`, v);
+        /* A mensagem sai em frase corrida, como a pessoa escreveria. As
+           respostas completas chegam à equipe pelo e-mail e pela planilha. */
+        let modelo = valor('cp-modelo');
+        if (modelo && destino.cor && destino.modelo && modelo === destino.modelo.nome) {
+          modelo += ` na cor ${destino.cor.toLowerCase()}`;
+        }
+        const trocas = {
+          ...respostas,
+          modelo,
+          prazo: respostas.prazo.charAt(0).toLowerCase() + respostas.prazo.slice(1),
+        };
+        let texto = (modelo ? cfg.mensagens.qualificado : cfg.mensagens.qualificadoSemModelo) || cfg.mensagens.qualificado;
+        for (const [k, v] of Object.entries(trocas)) texto = texto.replaceAll(`{${k}}`, v);
         const url = `https://wa.me/${destino.numero}?text=${encodeURIComponent(texto)}`;
 
         avisarLoja({
@@ -1398,7 +1405,7 @@
           <div class="form__sucesso captura__sucesso" role="status">
             <h3 class="t-h3">Valeu, ${escapar(respostas.nome.split(' ')[0])}!</h3>
             <p style="margin:0">
-              Abrimos o WhatsApp com as suas respostas. Se a janela não apareceu,
+              Abrimos o WhatsApp com a sua mensagem pronta. Se a janela não apareceu,
               toque no botão abaixo. O consultor responde em horário comercial.
             </p>
             <a class="btn btn--primario" href="${url}" target="_blank" rel="noopener" data-rastreado="1" data-captura="nao" style="justify-self:center">
@@ -1478,9 +1485,12 @@
         return;
       }
 
-      const url = linkWhats('testRide', {
+      // A primeira opção da lista ("Ainda não sei") não é um modelo.
+      const modelo = $('#tr-interesse').value;
+      const temModelo = (window.MOTOKKA_MODELOS || []).some((m) => m.nome === modelo);
+      const url = linkWhats(temModelo ? 'testRide' : 'testRideSemModelo', {
         nome: nome.value.trim(),
-        interesse: $('#tr-interesse').value,
+        modelo,
       });
 
       /* Formulário preenchido = lead_gerado_mql. `telefone` e `nome_lead` o
