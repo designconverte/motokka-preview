@@ -43,19 +43,20 @@
       .slice(0, 40);
   }
 
-  /* Todo caminho que leva ao WhatsApp de um modelo passa por aqui, para os
-     dois eventos saírem sempre iguais e sempre juntos:
+  /* Eventos de conversão da página:
 
-     1. `generate_lead`, que é A conversão. Uma só, com o modelo em parâmetro.
-        É esta que deve ser marcada como evento-chave no GA4 e importada no
-        Google Ads: o lance automático precisa do volume somado, não de 21
-        conversões com uma venda cada.
+     · `lead_gerado_mql`: formulário preenchido (qualificação ou test ride).
+       É A conversão: a que se marca como evento-chave no GA4 e se importa no
+       Google Ads. Vai com o modelo e as respostas em parâmetro.
+     · `chamou_no_whatsapp`: clique em botão de WhatsApp que não passa por
+       formulário (flutuante, assistência, locação, ou todos quando a captura
+       está desligada). Contato, não lead qualificado.
+     · `btn_interesse_{marca}_{modelo}`: só para segmentar. Vai apenas para o
+       GA4 e NÃO deve ser marcado como evento-chave.
 
-     2. `btn_interesse_{marca}_{modelo}`, que é só para segmentar. Vai apenas
-        para o GA4 e NÃO deve ser marcado como evento-chave. Como não vai para
-        a Meta nem para o log, não existe risco de contar a mesma conversão
-        duas vezes. */
-  function interesseNoModelo(modelo, origem, extras = {}) {
+     Todo caminho ligado a um modelo passa por aqui, para os eventos saírem
+     sempre iguais e sempre juntos. */
+  function interesseNoModelo(modelo, origem, extras = {}, nome = 'chamou_no_whatsapp') {
     if (!modelo) return;
     const dados = {
       origem,
@@ -65,7 +66,7 @@
       item_category: modelo.categoria || undefined,
       ...extras,
     };
-    emitir('generate_lead', dados);
+    emitir(nome, dados);
     emitir(slugEvento(`btn_interesse_${modelo.fabricante}_${modelo.nome}`), dados, { somenteNavegador: true });
   }
 
@@ -73,20 +74,38 @@
 
   const reais = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 
-  /** HTML do preço do modelo, ou '' se a chave estiver desligada. */
-  function blocoPreco(m, classe) {
+  const centavos = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
+
+  /** HTML do preço do modelo, ou '' se a chave estiver desligada.
+
+      O card usa a versão curta, sempre com as mesmas três linhas (preço
+      riscado, preço, uma linha de condição), para os preços ficarem na mesma
+      altura em todos os cards: quem não tem preço riscado reserva a linha
+      vazia. A ficha do modelo, que tem espaço, leva as condições completas. */
+  function blocoPreco(m, classe, completo = false) {
     if (!cfg.recursos?.precos) return '';
     const p = m.preco;
     if (!p || !p.valor) {
       return `<div class="${classe} ${classe}--consulta"><b>Preço sob consulta</b></div>`;
     }
-    const linhas = [];
-    if (p.condicao) linhas.push(escapar(p.condicao));
-    if (p.parcelado) linhas.push(`ou ${reais.format(p.parcelado.valor)} em até ${p.parcelado.vezes}x sem juros`);
-    if (p.boleto) linhas.push('Também no boleto');
+    const parcela = p.parcelado ? `${p.parcelado.vezes}x de ${centavos.format(p.parcelado.valor / p.parcelado.vezes)}` : '';
+
+    let linhas;
+    if (completo) {
+      linhas = [];
+      if (p.condicao) linhas.push(escapar(p.condicao));
+      if (parcela) linhas.push(`ou ${parcela} sem juros no cartão (total ${reais.format(p.parcelado.valor)})`);
+      if (p.boleto) linhas.push('Também no boleto');
+      if (!linhas.length) linhas.push('Condições de pagamento pelo WhatsApp');
+    } else {
+      // Uma linha só: "à vista · ou 12x de R$ 908,33".
+      const curta = [p.condicao ? 'à vista' : '', parcela ? `ou ${parcela}` : ''].filter(Boolean).join(' · ');
+      linhas = [curta || 'Consulte as condições'];
+    }
+
     return `
       <div class="${classe}">
-        ${p.de ? `<s>${reais.format(p.de)}</s>` : ''}
+        ${p.de ? `<s>de ${reais.format(p.de)}</s>` : (completo ? '' : '<s class="is-vazio" aria-hidden="true">&nbsp;</s>')}
         <b>${reais.format(p.valor)}</b>
         ${linhas.map((l) => `<small>${l}</small>`).join('')}
       </div>`;
@@ -942,7 +961,7 @@
       $('#modal-titulo').textContent = atual.nome;
       $('#modal-tags').innerHTML = classe ? `<span class="tag tag--${classe.tom}">${escapar(classe.rotulo)}</span>` : '';
       const preco = $('#modal-preco');
-      preco.innerHTML = blocoPreco(atual, 'modal__preco-caixa');
+      preco.innerHTML = blocoPreco(atual, 'modal__preco-caixa', true);
       preco.hidden = !preco.innerHTML;
 
       const chamada = $('#modal-chamada');
@@ -1358,6 +1377,7 @@
            Prazo, orçamento e pagamento vão junto para segmentar no GA4; nome e
            telefone o sensor tira antes de mandar ao Google e à Meta. */
         const qualificacao = {
+          formulario: 'qualificacao',
           prazo: respostas.prazo,
           orcamento: respostas.orcamento,
           pagamento: respostas.pagamento,
@@ -1366,9 +1386,9 @@
         };
         const escolhido = (window.MOTOKKA_MODELOS || []).find((m) => m.nome === valor('cp-modelo'));
         if (escolhido) {
-          interesseNoModelo(escolhido, destino.origem, { ...qualificacao, cor: destino.cor || undefined });
+          interesseNoModelo(escolhido, destino.origem, { ...qualificacao, cor: destino.cor || undefined }, 'lead_gerado_mql');
         } else {
-          emitir('generate_lead', { origem: destino.origem, interesse: 'Ainda não sei', ...qualificacao });
+          emitir('lead_gerado_mql', { origem: destino.origem, interesse: 'Ainda não sei', ...qualificacao });
         }
 
         try { sessionStorage.setItem(CHAVE, '1'); } catch { /* sem storage: pergunta de novo, sem problema */ }
@@ -1463,11 +1483,10 @@
         interesse: $('#tr-interesse').value,
       });
 
-      /* Conversão principal da página. `telefone` e `nome_lead` vão só para a
-         fila de lead do motor (em claro) e para a CAPI em SHA-256, com aceite.
-         Sem `value`: os modelos não têm preço no site, e valor inventado
-         distorce o lance do Google Ads. */
-      emitir('generate_lead', {
+      /* Formulário preenchido = lead_gerado_mql. `telefone` e `nome_lead` o
+         sensor tira antes de mandar ao Google e à Meta. */
+      emitir('lead_gerado_mql', {
+        formulario: 'test_ride',
         origem: 'formulario',
         interesse: $('#tr-interesse').value,
         telefone: whats.value,
